@@ -1,8 +1,8 @@
 {
   "name": "舞艺嘉",
   "short_name": "舞艺嘉",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/wuyijiaschool/",
+  "scope": "/wuyijiaschool/",
   "display": "standalone",
   "background_color": "#eeeff2",
   "theme_color": "#eeeff2",

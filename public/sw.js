@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wuyijia-pwa-v2';
+const CACHE_NAME = 'wuyijia-pwa-v3';
 const PRECACHE_URLS = ['/', '/index.html', '/manifest.webmanifest', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
@@ -18,10 +18,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  if (request.method !== 'GET') {
+  if (request.method !== 'GET') return;
+
+  // JS/CSS assets: always network-first (they change with every build)
+  if (request.destination === 'script' || request.destination === 'style') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
     return;
   }
 
+  // Navigation: network-first, cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -35,6 +42,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Everything else: cache-first, network fallback
   event.respondWith(
     caches.match(request).then((cached) =>
       cached ||

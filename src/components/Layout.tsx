@@ -21,7 +21,7 @@ function pageSubtitle(_tab: TabKey) {
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { state, dispatch } = useAppContext();
+  const { state, setTab } = useAppContext();
 
   return (
     <div className="app-shell">
@@ -44,7 +44,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <button
             key={item.key}
             className={item.key === state.tab ? 'tab active' : 'tab'}
-            onClick={() => dispatch({ type: 'SET_TAB', tab: item.key })}
+            onClick={() => setTab(item.key)}
           >
             <span>{item.icon}</span>
             {item.label}

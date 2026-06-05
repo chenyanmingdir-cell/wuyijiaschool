@@ -18,7 +18,7 @@ type Screen =
   | { name: 'studentCalendar'; studentId: ID };
 
 export default function Classes() {
-  const { state, dispatch } = useAppContext();
+  const { state, clearPendingCalendar } = useAppContext();
   const [stack, setStack] = useState<Screen[]>([{ name: 'classList' }]);
   const current = stack[stack.length - 1];
 
@@ -26,7 +26,7 @@ export default function Classes() {
   useEffect(() => {
     if (state.pendingStudentCalendarId) {
       push({ name: 'studentCalendar', studentId: state.pendingStudentCalendarId });
-      dispatch({ type: 'CLEAR_PENDING_CALENDAR' });
+      clearPendingCalendar();
     }
   }, [state.pendingStudentCalendarId]);
 
@@ -71,7 +71,7 @@ export default function Classes() {
 // ============================================================
 
 function ClassListScreen({ push }: { push(s: Screen): void }) {
-  const { state, dispatch } = useAppContext();
+  const { state, setClassId } = useAppContext();
   const { data } = state;
   const courses = data.courses;
   const [viewTab, setViewTab] = useState<'classes' | 'students'>('classes');
@@ -119,7 +119,7 @@ function ClassListScreen({ push }: { push(s: Screen): void }) {
                 <button
                   key={c.id}
                   className="mini-card"
-                  onClick={() => { dispatch({ type: 'SET_CLASS_ID', id: c.id }); push({ name: 'classDetail', classId: c.id }); }}
+                  onClick={() => { setClassId(c.id); push({ name: 'classDetail', classId: c.id }); }}
                 >
                   <div className="mini-card-title">
                     <strong>{c.name}</strong>
@@ -200,7 +200,7 @@ function StudentListScreen({ push }: { push(s: Screen): void }) {
 // ============================================================
 
 function CreateClassScreen({ pop }: { pop(): void }) {
-  const { state, dispatch } = useAppContext();
+  const { state, createClass } = useAppContext();
   const { data } = state;
   const courses = data.courses;
 
@@ -209,7 +209,7 @@ function CreateClassScreen({ pop }: { pop(): void }) {
   const [newCourseName, setNewCourseName] = useState('');
 
   const handleSave = () => {
-    dispatch({ type: 'CREATE_CLASS', name, existingCourseId: courseId, newCourseName });
+    createClass(name, courseId, newCourseName);
     pop();
   };
 
@@ -249,7 +249,7 @@ function CreateClassScreen({ pop }: { pop(): void }) {
 // ============================================================
 
 function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): void }) {
-  const { state, dispatch } = useAppContext();
+  const { state, updateClass, deleteClass } = useAppContext();
   const { data } = state;
   const cls = data.classes.find((c) => c.id === classId);
   const courses = data.courses;
@@ -302,8 +302,8 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
               </label>
             </div>
             <div className="actions-row">
-              <button className="primary" onClick={() => { dispatch({ type: 'UPDATE_CLASS', classId: cls.id, name: editName, courseId: editCourseId }); setEditingClass(false); }}>保存</button>
-              <button className="ghost danger" onClick={() => dispatch({ type: 'DELETE_CLASS', classId: cls.id })}>删除班级</button>
+              <button className="primary" onClick={() => { updateClass(cls.id, editName, editCourseId); setEditingClass(false); }}>保存</button>
+              <button className="ghost danger" onClick={() => deleteClass(cls.id)}>删除班级</button>
             </div>
           </>
         ) : null}
@@ -349,7 +349,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
 // ============================================================
 
 function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
-  const { state, dispatch } = useAppContext();
+  const { state, createStudent, attachStudent } = useAppContext();
   const { data } = state;
   const cls = data.classes.find((c) => c.id === classId);
   if (!cls) return <Empty text="班级不存在。" />;
@@ -373,7 +373,7 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
           <label><span>购买课时</span><input value={purchaseCnt} onChange={(e) => setPurchaseCnt(e.target.value)} inputMode="numeric" /></label>
         </div>
         <button className="primary" onClick={() => {
-          dispatch({ type: 'CREATE_STUDENT', classId: cls.id, name: newStuName, phone: newStuPhone, note: newStuNote, purchasedClasses: Number(purchaseCnt || 0) });
+          createStudent(cls.id, newStuName, newStuPhone, newStuNote, Number(purchaseCnt || 0));
           pop();
         }} disabled={!newStuName.trim()}>新增学员</button>
       </article>
@@ -390,7 +390,7 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
             </select>
           </label>
           <div className="actions-row" style={{ marginTop: 10 }}>
-            <button className="ghost" disabled={!existStuId} onClick={() => { dispatch({ type: 'ATTACH_STUDENT', classId: cls.id, studentId: existStuId }); pop(); }}>加入当前班级</button>
+            <button className="ghost" disabled={!existStuId} onClick={() => { attachStudent(cls.id, existStuId); pop(); }}>加入当前班级</button>
           </div>
         </article>
       ) : null}
@@ -402,8 +402,8 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
 // Screen 4: STUDENT DETAIL
 // ============================================================
 
-function StudentDetailScreen({ classId, studentId, push }: { classId?: ID; studentId: ID; push(s: Screen): void }) {
-  const { state, dispatch } = useAppContext();
+function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?: ID; studentId: ID; push(s: Screen): void }) {
+  const { state, deleteCard, updateStudent } = useAppContext();
   const { data } = state;
   const student = data.students.find((s) => s.id === studentId);
   if (!student) return <Empty text="学员不存在。" />;
@@ -533,7 +533,7 @@ function StudentDetailScreen({ classId, studentId, push }: { classId?: ID; stude
                     </div>
                     {cc.usedClasses === 0 ? (
                       <button className="ghost danger" style={{ marginTop: 6, fontSize: 11, padding: '4px 10px' }}
-                        onClick={() => dispatch({ type: 'DELETE_CARD', cardId: cc.id })}>删除</button>
+                        onClick={() => deleteCard(cc.id)}>删除</button>
                     ) : null}
                   </div>
                 ))}
@@ -569,7 +569,7 @@ function StudentDetailScreen({ classId, studentId, push }: { classId?: ID; stude
             <div className="sheet-head">
               <button className="ghost" onClick={() => setShowEdit(false)}>取消</button>
               <strong>编辑学员</strong>
-              <button className="primary" onClick={() => { dispatch({ type: 'UPDATE_STUDENT', studentId, name: edName, phone: edPhone, note: edNote }); setShowEdit(false); }}>保存</button>
+              <button className="primary" onClick={() => { updateStudent(studentId, edName, edPhone, edNote); setShowEdit(false); }}>保存</button>
             </div>
             <div className="form-grid">
               <label><span>姓名</span><input value={edName} onChange={(e) => setEdName(e.target.value)} /></label>
@@ -590,7 +590,7 @@ function StudentDetailScreen({ classId, studentId, push }: { classId?: ID; stude
 function PurchaseCardScreen({ classId: _classId, studentId, courseId, pop }: {
   classId?: ID; studentId: ID; courseId?: ID; pop(): void;
 }) {
-  const { state, dispatch } = useAppContext();
+  const { state, purchaseCard } = useAppContext();
   const { data } = state;
   const student = data.students.find((s) => s.id === studentId);
   const [amount, setAmount] = useState('24');
@@ -627,7 +627,7 @@ function PurchaseCardScreen({ classId: _classId, studentId, courseId, pop }: {
 
       <div className="actions-row">
         <button className="primary" onClick={() => {
-          dispatch({ type: 'PURCHASE_CARD', studentId, courseId: selCourseId, purchasedAt, purchasedClasses: Number(amount || 0) });
+          purchaseCard(studentId, selCourseId, purchasedAt, Number(amount || 0));
           pop();
         }} disabled={!amount || Number(amount) <= 0 || !selCourseId}>确认购买</button>
         <button className="ghost" onClick={pop}>取消</button>
@@ -641,7 +641,7 @@ function PurchaseCardScreen({ classId: _classId, studentId, courseId, pop }: {
 // ============================================================
 
 function StudentCalendarScreen({ studentId }: { studentId: ID }) {
-  const { state, dispatch } = useAppContext();
+  const { state } = useAppContext();
   const { data } = state;
   const student = data.students.find((s) => s.id === studentId);
   if (!student) return <Empty text="学员不存在。" />;
@@ -782,7 +782,7 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
 
 // ---- Sub-component: display + edit existing attendance ----
 function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: AttendanceRecord; studentId: ID; date: string }) {
-  const { state, dispatch } = useAppContext();
+  const { state, deleteAttendance, saveAttendance } = useAppContext();
   const { data } = state;
   const cls = data.classes.find((c) => c.id === record.classId);
   const course = data.courses.find((c) => c.id === record.courseId);
@@ -822,7 +822,7 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
         {record.note ? <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0' }}>备注：{record.note}</p> : null}
         <div className="actions-row" style={{ marginTop: 6 }}>
           <button className="ghost" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => setEditing(true)}>编辑考勤</button>
-          <button className="ghost danger" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => dispatch({ type: 'DELETE_ATTENDANCE', recordId: record.id })}>删除</button>
+          <button className="ghost danger" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => deleteAttendance(record.id)}>删除</button>
         </div>
       </div>
     );
@@ -857,7 +857,7 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
       </div>
       <div className="actions-row">
         <button className="primary" onClick={() => {
-          dispatch({ type: 'SAVE_ATTENDANCE', payload: { id: record.id, studentId, classId: record.classId, courseId: record.courseId, date, status, courseCardId: cardId || null, note, selectedCourseCardId: cardId || null } });
+          saveAttendance({ id: record.id, studentId, classId: record.classId, courseId: record.courseId, date, status, courseCardId: cardId || null, note, selectedCourseCardId: cardId || null });
           setEditing(false);
         }}>保存</button>
         <button className="ghost" onClick={() => setEditing(false)}>取消</button>
@@ -868,7 +868,7 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
 
 // ---- Sub-component: quick add attendance on student calendar ----
 function StudentCalendarQuickAdd({ studentId, date, studentClasses }: { studentId: ID; date: string; studentClasses: SchoolClass[] }) {
-  const { state, dispatch } = useAppContext();
+  const { state, saveAttendance } = useAppContext();
   const { data } = state;
 
   const [selClassId, setSelClassId] = useState(studentClasses[0]?.id ?? '');
@@ -912,9 +912,8 @@ function StudentCalendarQuickAdd({ studentId, date, studentClasses }: { studentI
         <span>备注</span>
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="备注" />
       </label>
-      <button className="primary" onClick={() => dispatch({
-        type: 'SAVE_ATTENDANCE',
-        payload: { id: uid(), studentId, classId: selClassId, courseId: selCourseId, date, status, courseCardId: cardId || null, note, selectedCourseCardId: cardId || null },
+      <button className="primary" onClick={() => saveAttendance({
+        id: uid(), studentId, classId: selClassId, courseId: selCourseId, date, status, courseCardId: cardId || null, note, selectedCourseCardId: cardId || null,
       })}>新增考勤</button>
     </div>
   );

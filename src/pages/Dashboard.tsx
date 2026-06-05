@@ -16,7 +16,7 @@ function classFlagsForClassDay(data: { attendanceRecords: { classId: ID; date: s
 type DashboardView = 'list' | 'daily';
 
 export default function Dashboard() {
-  const { state, dispatch } = useAppContext();
+  const { state, setDate, setTab, markAllAttendance, markAllHomework, saveAttendance, saveHomework, deleteAttendance, deleteHomework, openStudentCalendar } = useAppContext();
   const { data, selectedDate } = state;
 
   const [view, setView] = useState<DashboardView>('list');
@@ -97,7 +97,7 @@ export default function Dashboard() {
       <article className="panel hero">
         <Calendar
           selectedDate={selectedDate}
-          onSelectDate={(d) => dispatch({ type: 'SET_DATE', date: d })}
+          onSelectDate={(d) => setDate(d)}
           markers={calendarMarkers}
         />
       </article>
@@ -115,7 +115,7 @@ export default function Dashboard() {
             </div>
             <div className="cards">
               {classCards.length === 0 ? (
-                <Empty text="还没有班级，请先去班级页创建。" actionLabel="去创建班级" onAction={() => dispatch({ type: 'SET_TAB', tab: 'classes' })} />
+                <Empty text="还没有班级，请先去班级页创建。" actionLabel="去创建班级" onAction={() => setTab('classes')} />
               ) : null}
               {classCards.map(({ schoolClass, course, flags }) => (
                 <button
@@ -162,8 +162,8 @@ export default function Dashboard() {
               </div>
               <div>
                 {mode === 'attendance'
-                  ? <button className="ghost" onClick={() => dispatch({ type: 'MARK_ALL_ATTENDANCE', classId: activeClass.id, date: actionDate })}>全部出勤</button>
-                  : <button className="ghost" onClick={() => dispatch({ type: 'MARK_ALL_HOMEWORK', classId: activeClass.id, date: actionDate })}>全部提交</button>}
+                  ? <button className="ghost" onClick={() => markAllAttendance(activeClass.id, actionDate)}>全部出勤</button>
+                  : <button className="ghost" onClick={() => markAllHomework(activeClass.id, actionDate)}>全部提交</button>}
               </div>
             </div>
 
@@ -206,7 +206,7 @@ interface DailyStudentRowProps {
 function DailyStudentRow({
   student, schoolClass, date, mode, attValue, hwValue, onAttChange, onHwChange,
 }: DailyStudentRowProps) {
-  const { state, dispatch } = useAppContext();
+  const { state, saveAttendance, saveHomework, deleteAttendance, deleteHomework, openStudentCalendar } = useAppContext();
   const { data } = state;
 
   const course = data.courses.find((c) => c.id === schoolClass.courseId);
@@ -222,14 +222,12 @@ function DailyStudentRow({
   useEffect(() => { setCardId(existingAtt?.courseCardId ?? eligibleCards[0]?.id ?? ''); }, [existingAtt?.courseCardId, eligibleCards.length]);
   useEffect(() => { setAttNote(existingAtt?.note ?? ''); }, [existingAtt?.note]);
 
-  const saveAtt = () => dispatch({
-    type: 'SAVE_ATTENDANCE',
-    payload: { id: existingAtt?.id ?? uid(), studentId: student.id, classId: schoolClass.id, courseId: schoolClass.courseId, date, status: attValue, courseCardId: cardId || null, note: attNote, selectedCourseCardId: cardId || null },
+  const handleSaveAtt = () => saveAttendance({
+    id: existingAtt?.id ?? uid(), studentId: student.id, classId: schoolClass.id, courseId: schoolClass.courseId, date, status: attValue, courseCardId: cardId || null, note: attNote, selectedCourseCardId: cardId || null,
   });
 
-  const saveHw = () => dispatch({
-    type: 'SAVE_HOMEWORK',
-    payload: { id: existingHw?.id ?? uid(), studentId: student.id, classId: schoolClass.id, courseId: schoolClass.courseId, date, status: hwValue.status, content: hwValue.content },
+  const handleSaveHw = () => saveHomework({
+    id: existingHw?.id ?? uid(), studentId: student.id, classId: schoolClass.id, courseId: schoolClass.courseId, date, status: hwValue.status, content: hwValue.content,
   });
 
   const hasRecord = mode === 'attendance' ? Boolean(existingAtt) : Boolean(existingHw);
@@ -263,9 +261,9 @@ function DailyStudentRow({
             <input value={attNote} onChange={(e) => setAttNote(e.target.value)} placeholder="备注" style={{ flex: 1 }} />
           </div>
           <div className="actions-row">
-            <button className="primary" onClick={saveAtt}>保存</button>
-            {existingAtt ? <button className="ghost danger" onClick={() => dispatch({ type: 'DELETE_ATTENDANCE', recordId: existingAtt.id })}>删除</button> : null}
-            <button className="ghost" style={{ fontSize: 12, padding: '8px 12px' }} onClick={() => dispatch({ type: 'OPEN_STUDENT_CALENDAR', studentId: student.id })}>个人日历</button>
+            <button className="primary" onClick={handleSaveAtt}>保存</button>
+            {existingAtt ? <button className="ghost danger" onClick={() => deleteAttendance(existingAtt.id)}>删除</button> : null}
+            <button className="ghost" style={{ fontSize: 12, padding: '8px 12px' }} onClick={() => openStudentCalendar(student.id)}>个人日历</button>
           </div>
         </div>
       ) : (
@@ -276,8 +274,8 @@ function DailyStudentRow({
           </select>
           <textarea value={hwValue.content} onChange={(e) => onHwChange({ ...hwValue, content: e.target.value })} placeholder="作业内容或备注" rows={2} />
           <div className="actions-row">
-            <button className="primary" onClick={saveHw}>保存</button>
-            {existingHw ? <button className="ghost danger" onClick={() => dispatch({ type: 'DELETE_HOMEWORK', recordId: existingHw.id })}>删除</button> : null}
+            <button className="primary" onClick={handleSaveHw}>保存</button>
+            {existingHw ? <button className="ghost danger" onClick={() => deleteHomework(existingHw.id)}>删除</button> : null}
           </div>
         </div>
       )}

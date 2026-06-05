@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/wuyijiaschool/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/wuyijiaschool/icon-512.png", "destination": "/icon-512.png" },
+    { "source": "/wuyijiaschool/apple-touch-icon.png", "destination": "/apple-touch-icon.png" },
+    { "source": "/wuyijiaschool/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+    { "source": "/wuyijiaschool/sw.js", "destination": "/sw.js" },
+    { "source": "/wuyijiaschool/(.*)", "destination": "/index.html" }
+  ]
+}

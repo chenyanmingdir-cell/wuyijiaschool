@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useAppContext, type TabKey } from '../context/AppContext';
+import { StudentCalendarScreen } from '../pages/Classes';
 import InstallPrompt from './InstallPrompt';
 
 const tabs: Array<{ key: TabKey; label: string; icon: string }> = [
@@ -21,7 +22,7 @@ function pageSubtitle(_tab: TabKey) {
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const { state, setTab } = useAppContext();
+  const { state, setTab, closeStudentCalendar } = useAppContext();
 
   return (
     <div className="app-shell">
@@ -53,6 +54,22 @@ export default function Layout({ children }: { children: ReactNode }) {
       </nav>
 
       <InstallPrompt />
+
+      {/* Global Student Calendar Overlay */}
+      {state.activeStudentCalendarId ? (
+        <div className="sheet-backdrop" onClick={closeStudentCalendar}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '100vh', borderRadius: 0, maxWidth: '100%', padding: '16px calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left))' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <button className="ghost" onClick={closeStudentCalendar}>← 关闭</button>
+              <strong style={{ fontSize: 17 }}>学员日历</strong>
+              <div style={{ width: 48 }} />
+            </div>
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 80px)' }}>
+              <StudentCalendarScreen studentId={state.activeStudentCalendarId} />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

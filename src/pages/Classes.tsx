@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import type { AttendanceStatus, AttendanceRecord, ID, SchoolClass, Student } from '../types';
+import type { AttendanceStatus, AttendanceRecord, HomeworkRecord, HomeworkStatus, ID, SchoolClass, Student } from '../types';
 import { formatDate, formatMonth, isoDateOnly, sortCourseCardsFIFO, startOfMonth, addMonths, totalRemainingForCourse, uid, weekdayLabel } from '../utils';
 import Empty from '../components/Empty';
 
@@ -14,21 +14,12 @@ type Screen =
   | { name: 'classDetail'; classId: ID }
   | { name: 'addStudent'; classId: ID }
   | { name: 'studentDetail'; classId?: ID; studentId: ID }
-  | { name: 'purchaseCard'; classId?: ID; studentId: ID; courseId?: ID }
-  | { name: 'studentCalendar'; studentId: ID };
+  | { name: 'purchaseCard'; classId?: ID; studentId: ID; courseId?: ID };
 
 export default function Classes() {
-  const { state, clearPendingCalendar } = useAppContext();
+  const { state } = useAppContext();
   const [stack, setStack] = useState<Screen[]>([{ name: 'classList' }]);
   const current = stack[stack.length - 1];
-
-  // Handle cross-tab navigation: Dashboard → student calendar
-  useEffect(() => {
-    if (state.pendingStudentCalendarId) {
-      push({ name: 'studentCalendar', studentId: state.pendingStudentCalendarId });
-      clearPendingCalendar();
-    }
-  }, [state.pendingStudentCalendarId]);
 
   const push = (s: Screen) => setStack((prev) => [...prev, s]);
   const pop = () => setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
@@ -40,7 +31,6 @@ export default function Classes() {
       case 'addStudent': return '新增学员';
       case 'studentDetail': return '学员详情';
       case 'purchaseCard': return '购买课时';
-      case 'studentCalendar': return '学员日历';
       default: return '';
     }
   };
@@ -61,7 +51,6 @@ export default function Classes() {
       {current.name === 'addStudent' && <AddStudentScreen classId={(current as any).classId} pop={pop} />}
       {current.name === 'studentDetail' && <StudentDetailScreen classId={(current as any).classId} studentId={(current as any).studentId} push={push} />}
       {current.name === 'purchaseCard' && <PurchaseCardScreen classId={(current as any).classId} studentId={(current as any).studentId} courseId={(current as any).courseId} pop={pop} />}
-      {current.name === 'studentCalendar' && <StudentCalendarScreen studentId={(current as any).studentId} />}
     </div>
   );
 }
@@ -403,7 +392,7 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
 // ============================================================
 
 function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?: ID; studentId: ID; push(s: Screen): void }) {
-  const { state, deleteCard, updateStudent } = useAppContext();
+  const { state, openStudentCalendar, deleteCard, updateStudent } = useAppContext();
   const { data } = state;
   const student = data.students.find((s) => s.id === studentId);
   if (!student) return <Empty text="学员不存在。" />;
@@ -558,7 +547,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
       <article className="panel">
         <div className="panel-head"><h2>快捷操作</h2></div>
         <div className="actions-row">
-          <button className="ghost" onClick={() => push({ name: 'studentCalendar', studentId })}>考勤日历</button>
+          <button className="ghost" onClick={() => openStudentCalendar(studentId)}>考勤日历</button>
         </div>
       </article>
 
@@ -637,10 +626,10 @@ function PurchaseCardScreen({ classId: _classId, studentId, courseId, pop }: {
 }
 
 // ============================================================
-// Screen 6: STUDENT CALENDAR
+// Screen 6: STUDENT CALENDAR (Personal Page: Attendance + Homework)
 // ============================================================
 
-function StudentCalendarScreen({ studentId }: { studentId: ID }) {
+export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
   const { state } = useAppContext();
   const { data } = state;
   const student = data.students.find((s) => s.id === studentId);
@@ -680,12 +669,10 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
 
   const monthDays = buildMonthDays(monthCursor);
 
-  // Attendance records for selected date
+  // Attendance & homework records for selected date
   const dayRecords = data.attendanceRecords.filter(
     (r) => r.studentId === studentId && isoDateOnly(r.date) === selectedDate
   );
-
-  // Homework records for selected date
   const dayHwRecords = data.homeworkRecords.filter(
     (r) => r.studentId === studentId && isoDateOnly(r.date) === selectedDate
   );
@@ -695,17 +682,36 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
     .map((cid) => data.classes.find((c) => c.id === cid))
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
+  // Stats
+  const totalRemaining = data.courseCards
+    .filter((cc) => cc.studentId === studentId)
+    .reduce((a, b) => a + b.purchasedClasses - b.usedClasses, 0);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Upper: Calendar */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Card 1: Student Info */}
       <article className="panel">
-        <div className="panel-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, -1))}>上月</button>
+        <div className="panel-head">
           <div>
-            <h2 style={{ margin: 0, fontSize: 16 }}>{student.name}</h2>
-            <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{formatMonth(monthCursor)}</p>
+            <h2>{student.name}</h2>
+            <p style={{ fontSize: 12, color: 'var(--muted)' }}>
+              {studentClasses.map((c) => c.name).join('、') || '暂无班级'}
+            </p>
           </div>
-          <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, 1))}>下月</button>
+        </div>
+        <div className="stats" style={{ marginBottom: 0 }}>
+          <div className="stat"><span>剩余课时</span><strong>{totalRemaining}</strong></div>
+          <div className="stat"><span>所在班级</span><strong>{studentClasses.length}</strong></div>
+          <div className="stat"><span>课程卡</span><strong>{data.courseCards.filter((cc) => cc.studentId === studentId).length}</strong></div>
+        </div>
+      </article>
+
+      {/* Card 2: Calendar */}
+      <article className="panel">
+        <div className="panel-head" style={{ justifyContent: 'center', gap: 16 }}>
+          <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, -1))} style={{ padding: '8px 12px' }}>←</button>
+          <strong style={{ fontSize: 15, minWidth: 100, textAlign: 'center' }}>{formatMonth(monthCursor)}</strong>
+          <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, 1))} style={{ padding: '8px 12px' }}>→</button>
         </div>
 
         <div className="calendar">
@@ -738,43 +744,48 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
         </div>
       </article>
 
-      {/* Lower: Detail & Edit for selected date */}
+      {/* Card 3: Attendance Section */}
       <article className="panel">
         <div className="panel-head">
-          <h2>{formatDate(selectedDate)}</h2>
+          <h2>📋 考勤 · {formatDate(selectedDate)}</h2>
         </div>
 
-        {dayRecords.length === 0 ? (
-          <p className="muted" style={{ marginBottom: 12 }}>当日无考勤记录</p>
-        ) : (
+        {dayRecords.length > 0 ? (
           dayRecords.map((r) => (
             <StudentCalendarAttendanceEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
           ))
+        ) : (
+          <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无考勤记录</p>
         )}
 
-        <hr style={{ margin: '16px 0', border: 'none', borderTop: '1px solid var(--border)' }} />
-
-        {/* New attendance entry */}
-        <div style={{ marginBottom: 16 }}>
-          <div className="panel-head" style={{ marginBottom: 8 }}><h3 style={{ fontSize: 15 }}>新增考勤</h3></div>
+        <div style={{ marginTop: dayRecords.length > 0 ? 8 : 0 }}>
+          <div className="panel-head" style={{ marginBottom: 8 }}>
+            <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增考勤</h3>
+          </div>
           <StudentCalendarQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
         </div>
+      </article>
 
-        {/* Homework for selected date */}
-        {dayHwRecords.length > 0 && (
-          <>
-            <div className="panel-head" style={{ marginBottom: 8 }}><h3 style={{ fontSize: 15 }}>作业记录</h3></div>
-            {dayHwRecords.map((r) => {
-              const hwCls = data.classes.find((c) => c.id === r.classId);
-              return (
-                <div key={r.id} className="sub-card" style={{ padding: '10px 14px', marginBottom: 8 }}>
-                  <div className="row"><span>{hwCls?.name ?? ''}</span><span style={{ color: r.status === '已提交' ? 'var(--primary)' : 'var(--danger)', fontWeight: 500 }}>{r.status}</span></div>
-                  {r.content ? <p className="muted" style={{ margin: '4px 0 0', fontSize: 12 }}>内容：{r.content}</p> : null}
-                </div>
-              );
-            })}
-          </>
+      {/* Card 4: Homework Section */}
+      <article className="panel">
+        <div className="panel-head">
+          <h2>📝 作业 · {formatDate(selectedDate)}</h2>
+        </div>
+
+        {dayHwRecords.length > 0 ? (
+          dayHwRecords.map((r) => (
+            <StudentCalendarHomeworkEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
+          ))
+        ) : (
+          <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无作业记录</p>
         )}
+
+        <div style={{ marginTop: dayHwRecords.length > 0 ? 8 : 0 }}>
+          <div className="panel-head" style={{ marginBottom: 8 }}>
+            <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增作业</h3>
+          </div>
+          <StudentCalendarHomeworkQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
+        </div>
       </article>
     </div>
   );
@@ -915,6 +926,114 @@ function StudentCalendarQuickAdd({ studentId, date, studentClasses }: { studentI
       <button className="primary" onClick={() => saveAttendance({
         id: uid(), studentId, classId: selClassId, courseId: selCourseId, date, status, courseCardId: cardId || null, note, selectedCourseCardId: cardId || null,
       })}>新增考勤</button>
+    </div>
+  );
+}
+
+// ---- Sub-component: display + edit existing homework ----
+function StudentCalendarHomeworkEdit({ record, studentId, date }: { record: HomeworkRecord; studentId: ID; date: string }) {
+  const { state, deleteHomework, saveHomework } = useAppContext();
+  const { data } = state;
+  const cls = data.classes.find((c) => c.id === record.classId);
+  const course = data.courses.find((c) => c.id === record.courseId);
+
+  const [editing, setEditing] = useState(false);
+  const [status, setStatus] = useState<HomeworkStatus>(record.status);
+  const [content, setContent] = useState(record.content);
+
+  useEffect(() => {
+    setStatus(record.status);
+    setContent(record.content);
+  }, [record.id]);
+
+  if (!editing) {
+    return (
+      <div className="sub-card" style={{ padding: '12px 14px', marginBottom: 10 }}>
+        <div className="row" style={{ marginBottom: 4 }}>
+          <span><strong>{cls?.name ?? '未知班级'}</strong></span>
+          <span style={{ fontSize: 13, color: 'var(--muted)' }}>{course?.name ?? ''}</span>
+        </div>
+        <div className="row" style={{ marginBottom: 4 }}>
+          <span style={{ color: record.status === '已提交' ? 'var(--primary)' : 'var(--danger)', fontWeight: 500, fontSize: 14 }}>
+            状态：{record.status}
+          </span>
+        </div>
+        {record.content ? <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0' }}>内容：{record.content}</p> : null}
+        <div className="actions-row" style={{ marginTop: 6 }}>
+          <button className="ghost" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => setEditing(true)}>编辑作业</button>
+          <button className="ghost danger" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => deleteHomework(record.id)}>删除</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="sub-card" style={{ padding: '12px 14px', marginBottom: 10 }}>
+      <div className="row" style={{ marginBottom: 8 }}>
+        <span>{cls?.name ?? '未知班级'}</span>
+        <span className="muted">{course?.name ?? ''}</span>
+      </div>
+      <div className="form-grid">
+        <label>
+          <span>作业状态</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value as HomeworkStatus)}>
+            <option value="已提交">已提交</option>
+            <option value="未提交">未提交</option>
+          </select>
+        </label>
+        <label>
+          <span>作业内容</span>
+          <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="作业内容或备注" rows={2} />
+        </label>
+      </div>
+      <div className="actions-row">
+        <button className="primary" onClick={() => {
+          saveHomework({ id: record.id, studentId, classId: record.classId, courseId: record.courseId, date, status, content });
+          setEditing(false);
+        }}>保存</button>
+        <button className="ghost" onClick={() => setEditing(false)}>取消</button>
+      </div>
+    </div>
+  );
+}
+
+// ---- Sub-component: quick add homework on student calendar ----
+function StudentCalendarHomeworkQuickAdd({ studentId, date, studentClasses }: { studentId: ID; date: string; studentClasses: SchoolClass[] }) {
+  const { state, saveHomework } = useAppContext();
+  const { data } = state;
+
+  const [selClassId, setSelClassId] = useState(studentClasses[0]?.id ?? '');
+  const [status, setStatus] = useState<HomeworkStatus>('已提交');
+  const [content, setContent] = useState('');
+
+  if (studentClasses.length === 0) {
+    return <p className="muted">该学员尚未加入任何班级。</p>;
+  }
+
+  const selCourseId = studentClasses.find((c) => c.id === selClassId)?.courseId ?? '';
+
+  return (
+    <div className="form-grid">
+      <label>
+        <span>班级</span>
+        <select value={selClassId || studentClasses[0]?.id || ''} onChange={(e) => setSelClassId(e.target.value)}>
+          {studentClasses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>作业状态</span>
+        <select value={status} onChange={(e) => setStatus(e.target.value as HomeworkStatus)}>
+          <option value="已提交">已提交</option>
+          <option value="未提交">未提交</option>
+        </select>
+      </label>
+      <label>
+        <span>作业内容</span>
+        <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="作业内容或备注" rows={2} />
+      </label>
+      <button className="primary" onClick={() => saveHomework({
+        id: uid(), studentId, classId: selClassId, courseId: selCourseId, date, status, content,
+      })}>新增作业</button>
     </div>
   );
 }

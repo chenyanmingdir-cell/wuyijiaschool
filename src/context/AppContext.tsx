@@ -17,7 +17,7 @@ interface UIState {
   selectedDate: string;
   selectedClassId: ID;
   tab: TabKey;
-  pendingStudentCalendarId: ID | null;
+  activeStudentCalendarId: ID | null;
 }
 
 export type TabKey = 'dashboard' | 'classes' | 'reports' | 'settings';
@@ -31,7 +31,7 @@ type UIAction =
   | { type: 'SET_DATE'; date: string }
   | { type: 'SET_CLASS_ID'; id: ID }
   | { type: 'OPEN_STUDENT_CALENDAR'; studentId: ID }
-  | { type: 'CLEAR_PENDING_CALENDAR' };
+  | { type: 'CLOSE_STUDENT_CALENDAR' };
 
 function uiReducer(state: UIState, action: UIAction): UIState {
   switch (action.type) {
@@ -40,8 +40,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
     case 'SET_TAB': return { ...state, tab: action.tab };
     case 'SET_DATE': return { ...state, selectedDate: action.date };
     case 'SET_CLASS_ID': return { ...state, selectedClassId: action.id };
-    case 'OPEN_STUDENT_CALENDAR': return { ...state, pendingStudentCalendarId: action.studentId };
-    case 'CLEAR_PENDING_CALENDAR': return { ...state, pendingStudentCalendarId: null };
+    case 'OPEN_STUDENT_CALENDAR': return { ...state, activeStudentCalendarId: action.studentId };
+    case 'CLOSE_STUDENT_CALENDAR': return { ...state, activeStudentCalendarId: null };
     default: return state;
   }
 }
@@ -53,7 +53,7 @@ function initUI(): UIState {
     selectedDate: isoDateOnly(new Date()),
     selectedClassId: '',
     tab: 'dashboard',
-    pendingStudentCalendarId: null,
+    activeStudentCalendarId: null,
   };
 }
 
@@ -98,7 +98,7 @@ interface AppContextValue {
   setDate: (date: string) => void;
   setClassId: (id: ID) => void;
   openStudentCalendar: (studentId: ID) => void;
-  clearPendingCalendar: () => void;
+  closeStudentCalendar: () => void;
 
   // Workspace
   createWorkspace: (name: string) => Promise<void>;
@@ -654,13 +654,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setTab = useCallback((tab: TabKey) => uiDispatch({ type: 'SET_TAB', tab }), []);
   const setDate = useCallback((date: string) => uiDispatch({ type: 'SET_DATE', date }), []);
   const setClassId = useCallback((id: ID) => uiDispatch({ type: 'SET_CLASS_ID', id }), []);
-  const openStudentCalendar = useCallback((studentId: ID) => uiDispatch({ type: 'OPEN_STUDENT_CALENDAR', studentId }), []);
-  const clearPendingCalendar = useCallback(() => uiDispatch({ type: 'CLEAR_PENDING_CALENDAR' }), []);
+  const openStudentCalendar = useCallback((studentId: ID) => {
+    uiDispatch({ type: 'OPEN_STUDENT_CALENDAR', studentId });
+  }, []);
+  const closeStudentCalendar = useCallback(() => uiDispatch({ type: 'CLOSE_STUDENT_CALENDAR' }), []);
 
   // ---- Context value ----
   const value: AppContextValue = {
     state,
-    flash, setTab, setDate, setClassId, openStudentCalendar, clearPendingCalendar,
+    flash, setTab, setDate, setClassId, openStudentCalendar, closeStudentCalendar,
     createWorkspace, switchWorkspace, deleteWorkspace,
     createCourse, deleteCourse,
     createClass, updateClass, deleteClass,

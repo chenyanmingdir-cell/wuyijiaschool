@@ -519,7 +519,7 @@ textarea {
 }
 
 .day.selected {
-  background: var(--bg);
+  background: rgba(124, 111, 247, 0.1);
   box-shadow: var(--neu-sm-inset);
 }
 
@@ -528,6 +528,7 @@ textarea {
 }
 
 .day.selected.today {
+  background: rgba(124, 111, 247, 0.1);
   box-shadow: var(--neu-sm-inset), 0 0 0 2px var(--primary);
 }
 

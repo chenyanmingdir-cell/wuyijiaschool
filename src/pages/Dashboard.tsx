@@ -142,28 +142,26 @@ export default function Dashboard() {
           /* ────── Daily Processing ────── */
           <article className="panel">
             <div className="panel-head">
-              <div>
-                <button className="ghost" onClick={backToList} style={{ padding: '2px 4px', marginRight: 8 }}>← 返回</button>
-                <h2>班级当日处理</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button className="ghost" onClick={backToList} style={{ padding: '4px 8px', fontSize: 13, minHeight: 'auto' }}>←</button>
+                <h2 style={{ fontSize: 17 }}>{activeClass.name}</h2>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{activeStudents.length}人 · 签到{checkedIn}</span>
               </div>
-              <label className="inline-label">
-                <span>日期</span>
-                <input type="date" value={actionDate} onChange={(e) => setActionDate(e.target.value)} />
+              <label className="inline-label" style={{ gap: 4 }}>
+                <span style={{ fontSize: 12 }}>日期</span>
+                <input type="date" value={actionDate} onChange={(e) => setActionDate(e.target.value)} style={{ padding: '6px 10px', fontSize: 13, minHeight: 'auto' }} />
               </label>
             </div>
-            <p style={{ padding: '0 16px 8px', fontSize: 13, color: 'var(--muted)' }}>
-              {activeClass.name} · {activeCourse?.name ?? '未绑定课程'} · 学员人数 {activeStudents.length} · 已签到 {checkedIn}
-            </p>
 
             <div className="split-head">
               <div className="segmented">
-                <button className={mode === 'attendance' ? 'seg active' : 'seg'} onClick={() => setMode('attendance')}>批量考勤</button>
-                <button className={mode === 'homework' ? 'seg active' : 'seg'} onClick={() => setMode('homework')}>批量作业</button>
+                <button className={mode === 'attendance' ? 'seg active' : 'seg'} onClick={() => setMode('attendance')}>考勤</button>
+                <button className={mode === 'homework' ? 'seg active' : 'seg'} onClick={() => setMode('homework')}>作业</button>
               </div>
               <div>
                 {mode === 'attendance'
-                  ? <button className="ghost" onClick={() => markAllAttendance(activeClass.id, actionDate)}>全部出勤</button>
-                  : <button className="ghost" onClick={() => markAllHomework(activeClass.id, actionDate)}>全部提交</button>}
+                  ? <button className="ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={() => markAllAttendance(activeClass.id, actionDate)}>全部出勤</button>
+                  : <button className="ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={() => markAllHomework(activeClass.id, actionDate)}>全部提交</button>}
               </div>
             </div>
 
@@ -233,49 +231,42 @@ function DailyStudentRow({
   const hasRecord = mode === 'attendance' ? Boolean(existingAtt) : Boolean(existingHw);
 
   return (
-    <div className="mini-card">
+    <div className="student-row">
       <div className="mini-card-title">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {hasRecord ? <i className="dot purple" /> : null}
           <strong>{student.name}</strong>
         </div>
-        <span style={{ fontSize: 12, color: 'var(--muted)' }}>{course?.name ?? '未分课'} · 剩余 {remaining} 节</span>
+        <span style={{ fontSize: 11, color: 'var(--muted)' }}>{course?.name ?? '未分课'} · 剩{remaining}节</span>
       </div>
 
       {mode === 'attendance' ? (
-        <div className="row-stack">
-          <div className="row">
-            <span>当前：{existingAtt ? existingAtt.status : '未记录'}</span>
-            <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-              {existingAtt?.courseCardId ? `课程卡: ${eligibleCards.find((cc) => cc.id === existingAtt.courseCardId)?.purchasedClasses ?? 0} 节` : '未关联'}
-            </span>
-          </div>
-          <select value={attValue} onChange={(e) => onAttChange(e.target.value as AttendanceStatus)}>
-            <option value="出勤">出勤</option><option value="请假">请假</option><option value="旷课">旷课</option>
-          </select>
+        <div className="row-stack" style={{ gap: 8 }}>
           <div style={{ display: 'flex', gap: 8 }}>
-            <select value={cardId} onChange={(e) => setCardId(e.target.value)} style={{ flex: 1 }}>
+            <select value={attValue} onChange={(e) => onAttChange(e.target.value as AttendanceStatus)} style={{ flex: 1 }}>
+              <option value="出勤">出勤</option><option value="请假">请假</option><option value="旷课">旷课</option>
+            </select>
+            <select value={cardId} onChange={(e) => setCardId(e.target.value)} style={{ flex: 2 }}>
               <option value="">不关联课程卡</option>
               {eligibleCards.map((cc) => <option key={cc.id} value={cc.id}>{formatDate(cc.purchasedAt)} 购{cc.purchasedClasses}节</option>)}
             </select>
-            <input value={attNote} onChange={(e) => setAttNote(e.target.value)} placeholder="备注" style={{ flex: 1 }} />
           </div>
+          <input value={attNote} onChange={(e) => setAttNote(e.target.value)} placeholder="备注（可选）" />
           <div className="actions-row">
-            <button className="primary" onClick={handleSaveAtt}>保存</button>
-            {existingAtt ? <button className="ghost danger" onClick={() => deleteAttendance(existingAtt.id)}>删除</button> : null}
-            <button className="ghost" style={{ fontSize: 12, padding: '8px 12px' }} onClick={() => openStudentCalendar(student.id)}>个人日历</button>
+            <button className="primary" style={{ padding: '8px 16px', fontSize: 14 }} onClick={handleSaveAtt}>保存</button>
+            {existingAtt ? <button className="ghost danger" style={{ fontSize: 13 }} onClick={() => deleteAttendance(existingAtt.id)}>删除</button> : null}
+            <button className="ghost" style={{ fontSize: 12 }} onClick={() => openStudentCalendar(student.id)}>日历</button>
           </div>
         </div>
       ) : (
-        <div className="row-stack">
-          <div className="row"><span>当前：{existingHw ? existingHw.status : '无记录'}</span></div>
+        <div className="row-stack" style={{ gap: 8 }}>
           <select value={hwValue.status} onChange={(e) => onHwChange({ ...hwValue, status: e.target.value as HomeworkStatus })}>
             <option value="已提交">已提交</option><option value="未提交">未提交</option>
           </select>
           <textarea value={hwValue.content} onChange={(e) => onHwChange({ ...hwValue, content: e.target.value })} placeholder="作业内容或备注" rows={2} />
           <div className="actions-row">
-            <button className="primary" onClick={handleSaveHw}>保存</button>
-            {existingHw ? <button className="ghost danger" onClick={() => deleteHomework(existingHw.id)}>删除</button> : null}
+            <button className="primary" style={{ padding: '8px 16px', fontSize: 14 }} onClick={handleSaveHw}>保存</button>
+            {existingHw ? <button className="ghost danger" style={{ fontSize: 13 }} onClick={() => deleteHomework(existingHw.id)}>删除</button> : null}
           </div>
         </div>
       )}

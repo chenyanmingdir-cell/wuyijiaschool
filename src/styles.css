@@ -5,7 +5,7 @@
   /* ── Neumorphic palette ── */
   --bg: #eeeff2;
   --neu-light: #ffffff;
-  --neu-dark: #d6d7dc;
+  --neu-dark: #dedfe4;
   --surface: #eeeff2;
   --surface-strong: #eeeff2;
   --border: transparent;
@@ -14,10 +14,10 @@
   --primary: #7c6ff7;
   --primary-strong: #685cdb;
   --danger: #d94e4e;
-  --neu-raised: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
-  --neu-inset: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light);
-  --neu-sm-raised: 4px 4px 8px var(--neu-dark), -4px -4px 8px var(--neu-light);
-  --neu-sm-inset: inset 2px 2px 4px var(--neu-dark), inset -2px -2px 4px var(--neu-light);
+  --neu-raised: 4px 4px 10px var(--neu-dark), -4px -4px 10px var(--neu-light);
+  --neu-inset: inset 2px 2px 5px var(--neu-dark), inset -2px -2px 5px var(--neu-light);
+  --neu-sm-raised: 2px 2px 5px var(--neu-dark), -2px -2px 5px var(--neu-light);
+  --neu-sm-inset: inset 1px 1px 3px var(--neu-dark), inset -1px -1px 3px var(--neu-light);
   --radius-xl: 22px;
   --radius-lg: 18px;
   --radius-md: 16px;
@@ -366,7 +366,7 @@ textarea {
 .primary {
   color: #fff;
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  box-shadow: 0 4px 12px rgba(124, 111, 247, 0.3), 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(124, 111, 247, 0.22), 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .ghost,
@@ -631,7 +631,7 @@ textarea {
   max-width: 480px;
   background: var(--bg);
   border-radius: 22px 22px 0 0;
-  box-shadow: 0 -8px 32px rgba(74, 75, 90, 0.15);
+  box-shadow: 0 -4px 20px rgba(74, 75, 90, 0.1);
   border: none;
   padding: 16px;
   padding-bottom: calc(16px + var(--safe-bottom));
@@ -715,6 +715,25 @@ textarea {
 /* ===== Student row compact ===== */
 .student-row .mini-card-title {
   flex-wrap: wrap;
+}
+
+/* Flat student row — no shadow, subtle separator (used in daily processing) */
+.student-row {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.student-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.student-row:first-child {
+  padding-top: 0;
 }
 
 /* ===== Install prompt ===== */

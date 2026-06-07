@@ -105,7 +105,7 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Nav cards */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>统计报表</h2></div>
         <div className="cards">
           <button className="mini-card" onClick={() => push({ name: 'classSummary' })}>
@@ -126,7 +126,7 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
       </article>
 
       {/* Stats overview */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>数据概览</h2></div>
         <div className="stats">
           <div className="stat"><span>班级数</span><strong>{data.classes.length}</strong></div>
@@ -136,7 +136,7 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
       </article>
 
       {/* Low remaining warning */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head">
           <div>
             <h2>剩余课时预警</h2>
@@ -321,7 +321,7 @@ function ClassSummaryReport() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Filters */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>筛选条件</h2></div>
         <div className="form-grid">
           <label>
@@ -345,7 +345,7 @@ function ClassSummaryReport() {
       </article>
 
       {/* Results */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head">
           <div>
             <h2>{selectedClass?.name ?? '班级'} · 学员统计</h2>
@@ -499,7 +499,7 @@ function StudentDetailReport() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Filters */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>筛选条件</h2></div>
         <div className="form-grid">
           <label>
@@ -525,7 +525,7 @@ function StudentDetailReport() {
       ) : (
         <>
           {/* Stats */}
-          <article className="panel" style={{ padding: 16 }}>
+          <article className="panel">
             <div className="panel-head">
               <div>
                 <h2>{student.name}</h2>
@@ -545,7 +545,7 @@ function StudentDetailReport() {
           </article>
 
           {/* Attendance list */}
-          <article className="panel" style={{ padding: 16 }}>
+          <article className="panel">
             <div className="panel-head">
               <div>
                 <h2>考勤记录</h2>
@@ -586,7 +586,7 @@ function StudentDetailReport() {
           </article>
 
           {/* Homework list */}
-          <article className="panel" style={{ padding: 16 }}>
+          <article className="panel">
             <div className="panel-head">
               <div>
                 <h2>作业记录</h2>
@@ -628,7 +628,7 @@ function StudentDetailReport() {
           </article>
 
           {/* CSV Export */}
-          <article className="panel" style={{ padding: 16 }}>
+          <article className="panel">
             <div className="panel-head"><h2>导出</h2></div>
             <button className="primary" onClick={() => downloadText(`学员明细-${student.name}-${dateFrom}-${dateTo}.csv`, toCSV(csvRows), 'text/csv')}>
               导出 CSV

@@ -103,7 +103,7 @@ function ClassListScreen({ push }: { push(s: Screen): void }) {
       </div>
 
       {viewTab === 'classes' ? (
-        <article className="panel" style={{ padding: 16 }}>
+        <article className="panel">
           <div className="panel-head">
             <h2>班级</h2>
             <button className="primary" onClick={() => push({ name: 'createClass' })}>新增班级</button>
@@ -150,7 +150,7 @@ function StudentListScreen({ push }: { push(s: Screen): void }) {
   const { data } = state;
 
   return (
-    <article className="panel" style={{ padding: 16 }}>
+    <article className="panel">
       <div className="panel-head">
         <h2>全部学员</h2>
         <span className="muted">{data.students.length} 人</span>
@@ -214,7 +214,7 @@ function CreateClassScreen({ pop }: { pop(): void }) {
   };
 
   return (
-    <article className="panel" style={{ padding: 16 }}>
+    <article className="panel">
       <div className="form-grid">
         <label>
           <span>班级名称</span>
@@ -268,7 +268,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Class info: compact read-only by default */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head">
           <div>
             <h2>{cls.name}</h2>
@@ -315,7 +315,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
       </div>
 
       {/* Student roster */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>学员列表</h2></div>
         <div className="cards">
           {classStudents.length === 0 ? <Empty text="当前班级还没有学员。" /> : null}
@@ -364,7 +364,7 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>新增学员</h2></div>
         <div className="form-grid">
           <label><span>姓名</span><input value={newStuName} onChange={(e) => setNewStuName(e.target.value)} placeholder="学员姓名" /></label>
@@ -379,7 +379,7 @@ function AddStudentScreen({ classId, pop }: { classId: ID; pop(): void }) {
       </article>
 
       {otherStudents.length > 0 ? (
-        <article className="panel" style={{ padding: 16 }}>
+        <article className="panel">
           <div className="panel-head"><h2>加入已有学员</h2></div>
           <label>
             <select value={existStuId} onChange={(e) => setExistStuId(e.target.value)}>
@@ -470,7 +470,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Student info */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head">
           <div>
             <h2>{student.name}</h2>
@@ -502,7 +502,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
         const groupRemaining = Math.max(groupPurch - groupUsed, 0);
 
         return (
-          <article className="panel" key={group.courseId} style={{ padding: 16 }}>
+          <article className="panel" key={group.courseId}>
             <div className="panel-head">
               <h2>{group.courseName}</h2>
               <span className="muted">{group.classIds.map((cid) => data.classes.find((c) => c.id === cid)?.name ?? '').join('、')}</span>
@@ -555,7 +555,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
       })}
 
       {/* Actions */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head"><h2>快捷操作</h2></div>
         <div className="actions-row">
           <button className="ghost" onClick={() => push({ name: 'studentCalendar', studentId })}>考勤日历</button>
@@ -600,7 +600,7 @@ function PurchaseCardScreen({ classId: _classId, studentId, courseId, pop }: {
   const course = data.courses.find((c) => c.id === selCourseId);
 
   return (
-    <article className="panel" style={{ padding: 16 }}>
+    <article className="panel">
       <div className="panel-head">
         <div>
           <h2>{student?.name ?? '学员'}</h2>
@@ -698,7 +698,7 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Upper: Calendar */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, -1))}>上月</button>
           <div>
@@ -739,7 +739,7 @@ function StudentCalendarScreen({ studentId }: { studentId: ID }) {
       </article>
 
       {/* Lower: Detail & Edit for selected date */}
-      <article className="panel" style={{ padding: 16 }}>
+      <article className="panel">
         <div className="panel-head">
           <h2>{formatDate(selectedDate)}</h2>
         </div>

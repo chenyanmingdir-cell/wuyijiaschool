@@ -14,7 +14,7 @@ function PageRouter() {
 
   // Enforce minimum 2s splash display
   useEffect(() => {
-    const timer = setTimeout(() => setMinTimeElapsed(true), 2000);
+    const timer = setTimeout(() => setMinTimeElapsed(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 

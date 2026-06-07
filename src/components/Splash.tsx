@@ -8,22 +8,28 @@ export default function Splash() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'var(--bg)',
+      background: '#ececf0',
       padding: '40px 24px',
     }}>
-      {/* Decorative top element */}
-      <div className="splash-petal" style={{
+      {/* Pixel-art dancing girl */}
+      <div style={{
         width: 48,
-        height: 48,
-        borderRadius: '50% 50% 50% 0',
-        background: 'linear-gradient(135deg, var(--primary), rgba(124,111,247,0.3))',
-        marginBottom: 40,
-        animation: 'petalFloat 3s ease-in-out infinite',
-        opacity: 0.85,
-      }} />
+        height: 70,
+        marginBottom: 32,
+        animation: 'dancerBounce 0.7s ease-in-out infinite',
+        imageRendering: 'pixelated',
+      }}>
+        <img
+          src="/wuyijiaschool/dancegirl.png"
+          alt="dancing girl"
+          width={48}
+          height={70}
+          style={{ display: 'block', imageRendering: 'pixelated' }}
+        />
+      </div>
 
       {/* Title */}
-      <h1 className="splash-title" style={{
+      <h1 style={{
         fontFamily: 'var(--font-display)',
         fontSize: 32,
         fontWeight: 600,
@@ -37,7 +43,7 @@ export default function Splash() {
       </h1>
 
       {/* Divider */}
-      <div className="splash-divider" style={{
+      <div style={{
         width: 40,
         height: 3,
         borderRadius: 2,
@@ -47,7 +53,7 @@ export default function Splash() {
       }} />
 
       {/* Slogan */}
-      <p className="splash-slogan" style={{
+      <p style={{
         fontFamily: 'var(--font-display)',
         fontSize: 16,
         color: 'var(--muted)',
@@ -60,7 +66,7 @@ export default function Splash() {
         以舞之名，让花成花
       </p>
 
-      {/* Subtle loading indicator */}
+      {/* Loading dots */}
       <div style={{
         marginTop: 48,
         display: 'flex',
@@ -82,7 +88,6 @@ export default function Splash() {
         ))}
       </div>
 
-      {/* Keyframes injected via style tag */}
       <style>{`
         @keyframes splashFadeUp {
           from { opacity: 0; transform: translateY(16px); }
@@ -96,10 +101,9 @@ export default function Splash() {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.8; transform: scale(1.5); }
         }
-        @keyframes petalFloat {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          33% { transform: translateY(-6px) rotate(3deg); }
-          66% { transform: translateY(2px) rotate(-2deg); }
+        @keyframes dancerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
         }
       `}</style>
     </div>

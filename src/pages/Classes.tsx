@@ -637,6 +637,7 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
 
   const [monthCursor, setMonthCursor] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(isoDateOnly(new Date()));
+  const [activeTab, setActiveTab] = useState<'attendance' | 'homework'>('attendance');
 
   // Build a map: dateStr → set of statuses for that day (for colored dots)
   const dayStatusMap = useMemo(() => {
@@ -744,48 +745,61 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
         </div>
       </article>
 
-      {/* Card 3: Attendance Section */}
+      {/* Card 3: Attendance & Homework Tabs */}
       <article className="panel">
         <div className="panel-head">
-          <h2>📋 考勤 · {formatDate(selectedDate)}</h2>
-        </div>
-
-        {dayRecords.length > 0 ? (
-          dayRecords.map((r) => (
-            <StudentCalendarAttendanceEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
-          ))
-        ) : (
-          <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无考勤记录</p>
-        )}
-
-        <div style={{ marginTop: dayRecords.length > 0 ? 8 : 0 }}>
-          <div className="panel-head" style={{ marginBottom: 8 }}>
-            <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增考勤</h3>
+          <div className="segmented">
+            <button
+              className={activeTab === 'attendance' ? 'seg active' : 'seg'}
+              onClick={() => setActiveTab('attendance')}
+            >
+              📋 考勤
+            </button>
+            <button
+              className={activeTab === 'homework' ? 'seg active' : 'seg'}
+              onClick={() => setActiveTab('homework')}
+            >
+              📝 作业
+            </button>
           </div>
-          <StudentCalendarQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
-        </div>
-      </article>
-
-      {/* Card 4: Homework Section */}
-      <article className="panel">
-        <div className="panel-head">
-          <h2>📝 作业 · {formatDate(selectedDate)}</h2>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(selectedDate)}</span>
         </div>
 
-        {dayHwRecords.length > 0 ? (
-          dayHwRecords.map((r) => (
-            <StudentCalendarHomeworkEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
-          ))
+        {activeTab === 'attendance' ? (
+          <>
+            {dayRecords.length > 0 ? (
+              dayRecords.map((r) => (
+                <StudentCalendarAttendanceEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
+              ))
+            ) : (
+              <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无考勤记录</p>
+            )}
+
+            {dayRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)' }} /> : null}
+
+            <div className="panel-head" style={{ marginBottom: 8 }}>
+              <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增考勤</h3>
+            </div>
+            <StudentCalendarQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
+          </>
         ) : (
-          <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无作业记录</p>
-        )}
+          <>
+            {dayHwRecords.length > 0 ? (
+              dayHwRecords.map((r) => (
+                <StudentCalendarHomeworkEdit key={r.id} record={r} studentId={studentId} date={selectedDate} />
+              ))
+            ) : (
+              <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无作业记录</p>
+            )}
 
-        <div style={{ marginTop: dayHwRecords.length > 0 ? 8 : 0 }}>
-          <div className="panel-head" style={{ marginBottom: 8 }}>
-            <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增作业</h3>
-          </div>
-          <StudentCalendarHomeworkQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
-        </div>
+            {dayHwRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)' }} /> : null}
+
+            <div className="panel-head" style={{ marginBottom: 8 }}>
+              <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增作业</h3>
+            </div>
+            <StudentCalendarHomeworkQuickAdd studentId={studentId} date={selectedDate} studentClasses={studentClasses} />
+          </>
+        )}
       </article>
     </div>
   );

@@ -58,13 +58,28 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Global Student Calendar Overlay */}
       {state.activeStudentCalendarId ? (
         <div className="sheet-backdrop" onClick={closeStudentCalendar}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '100vh', borderRadius: 0, maxWidth: '100%', padding: '16px calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left))' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <button className="ghost" onClick={closeStudentCalendar}>← 关闭</button>
+          <div className="sheet" onClick={(e) => e.stopPropagation()} style={{
+            display: 'flex', flexDirection: 'column',
+            height: '100%', maxHeight: '100vh', borderRadius: 0, maxWidth: '100%',
+            padding: 0,
+          }}>
+            {/* Sticky header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px calc(16px + var(--safe-right)) 12px calc(16px + var(--safe-left))',
+              position: 'sticky', top: 0, zIndex: 2,
+              background: 'var(--bg)',
+              borderBottom: '1px solid rgba(0,0,0,0.05)',
+            }}>
+              <button className="ghost" onClick={closeStudentCalendar} style={{ padding: '8px 14px', fontSize: 15 }}>← 关闭</button>
               <strong style={{ fontSize: 17 }}>学员日历</strong>
               <div style={{ width: 48 }} />
             </div>
-            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 80px)' }}>
+            {/* Scrollable content */}
+            <div style={{
+              flex: 1, overflowY: 'auto',
+              padding: '12px calc(16px + var(--safe-right)) calc(24px + var(--safe-bottom)) calc(16px + var(--safe-left))',
+            }}>
               <StudentCalendarScreen studentId={state.activeStudentCalendarId} />
             </div>
           </div>

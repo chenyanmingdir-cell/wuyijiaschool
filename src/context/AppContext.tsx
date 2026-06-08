@@ -186,14 +186,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setData(targetWs.data);
           if (savedId !== targetWs.id) localStorage.setItem(WS_KEY, targetWs.id);
         } else {
-          // No workspaces at all: create a default one
-          const empty = createEmptyData();
-          const ws = await db.createWorkspace('我的数据', empty);
-          setWorkspaces([ws]);
-          setWorkspaceId(ws.id);
-          setWorkspaceName(ws.name);
-          setData(empty);
-          localStorage.setItem(WS_KEY, ws.id);
+          // No workspaces at all: let user create one via onboarding
+          setWorkspaces([]);
+          setWorkspaceId('');
+          setWorkspaceName('');
+          setData(createEmptyData());
         }
       } catch {
         // Offline or error - keep empty data

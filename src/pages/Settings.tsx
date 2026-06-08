@@ -24,6 +24,14 @@ export default function Settings() {
   const [showNewWs, setShowNewWs] = useState(false);
   const [newWsName, setNewWsName] = useState('');
 
+  // Delete confirmation
+  const [deleteTargetId, setDeleteTargetId] = useState('');
+
+  // Switch password verification
+  const [switchTargetId, setSwitchTargetId] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
   const importRef = useRef<HTMLInputElement | null>(null);
 
   const handleImport = async (file: File | null) => {
@@ -72,12 +80,12 @@ export default function Settings() {
               </div>
               <div className="actions-row" style={{ marginTop: 8 }}>
                 {ws.id !== workspaceId ? (
-                  <button className="primary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => switchWorkspace(ws.id)}>
+                  <button className="primary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => { setSwitchTargetId(ws.id); setAdminPassword(''); setPasswordError(false); }}>
                     切换到此版本
                   </button>
                 ) : null}
                 {ws.id === workspaceId && workspaces.length > 1 ? (
-                  <button className="ghost danger" style={{ fontSize: 11, padding: '4px 10px' }} onClick={() => deleteWorkspace(ws.id)}>
+                  <button className="ghost danger" style={{ fontSize: 11, padding: '4px 10px' }} onClick={() => setDeleteTargetId(ws.id)}>
                     删除
                   </button>
                 ) : null}
@@ -190,6 +198,100 @@ export default function Settings() {
         </div>
         <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>导入会替换当前「{workspaceName}」的数据，请确认后再操作。</p>
       </article>
+
+      {/* Delete Confirmation Sheet */}
+      {deleteTargetId ? (() => {
+        const targetWs = workspaces.find((w) => w.id === deleteTargetId);
+        const targetName = targetWs?.name ?? '';
+        return (
+        <div className="sheet-backdrop" onClick={() => setDeleteTargetId('')}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-head">
+              <button className="ghost" onClick={() => setDeleteTargetId('')}>取消</button>
+              <strong>确认删除</strong>
+              <div />
+            </div>
+            <p style={{ textAlign: 'center', margin: '12px 0 16px', color: 'var(--muted)', fontSize: 14, lineHeight: 1.6 }}>
+              确定要删除数据版本「{targetName}」吗？<br />
+              <span style={{ color: 'var(--danger)' }}>此操作不可恢复，建议先导出备份。</span>
+            </p>
+            <div className="cards" style={{ gap: 8 }}>
+              <button className="primary" style={{ background: 'var(--danger)', width: '100%' }} onClick={() => { deleteWorkspace(deleteTargetId); setDeleteTargetId(''); }}>
+                直接删除
+              </button>
+              <button className="primary" onClick={() => {
+                const json = JSON.stringify({ name: targetName, exportedAt: new Date().toISOString(), data: targetWs?.data }, null, 2);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+                a.download = `wuyijiaschool-${targetName}-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                flash('success', '已导出备份，可安全删除');
+                setDeleteTargetId('');
+              }}>
+                导出备份（稍后自行删除）
+              </button>
+              <button className="ghost" onClick={() => setDeleteTargetId('')}>取消</button>
+            </div>
+          </div>
+        </div>
+        );
+      })() : null}
+
+      {/* Switch Workspace Password Sheet */}
+      {switchTargetId ? (
+        <div className="sheet-backdrop" onClick={() => { setSwitchTargetId(''); setPasswordError(false); }}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-head">
+              <button className="ghost" onClick={() => { setSwitchTargetId(''); setPasswordError(false); }}>取消</button>
+              <strong>管理员验证</strong>
+              <div />
+            </div>
+            <p style={{ textAlign: 'center', margin: '8px 0 16px', color: 'var(--muted)', fontSize: 13 }}>
+              切换到「{workspaces.find((w) => w.id === switchTargetId)?.name ?? ''}」需要管理员密码
+            </p>
+            <div className="form-grid">
+              <label>
+                <span>管理员密码</span>
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => { setAdminPassword(e.target.value); setPasswordError(false); }}
+                  placeholder="请输入密码"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (adminPassword === '135791') {
+                        switchWorkspace(switchTargetId);
+                        setSwitchTargetId('');
+                        setAdminPassword('');
+                      } else {
+                        setPasswordError(true);
+                      }
+                    }
+                  }}
+                />
+              </label>
+              {passwordError ? (
+                <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0, textAlign: 'center' }}>密码错误，请重试</p>
+              ) : null}
+            </div>
+            <div className="actions-row" style={{ justifyContent: 'center', marginTop: 12 }}>
+              <button className="ghost" onClick={() => { setSwitchTargetId(''); setPasswordError(false); }}>取消</button>
+              <button className="primary" onClick={() => {
+                if (adminPassword === '135791') {
+                  switchWorkspace(switchTargetId);
+                  setSwitchTargetId('');
+                  setAdminPassword('');
+                  setPasswordError(false);
+                } else {
+                  setPasswordError(true);
+                }
+              }}>验证并切换</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

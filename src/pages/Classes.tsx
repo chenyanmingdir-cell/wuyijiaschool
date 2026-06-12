@@ -433,13 +433,12 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
   }
 
   // Attendance summary per course
-  const attByCourse: Record<ID, { attend: number; leave: number; absent: number }> = {};
+  const attByCourse: Record<ID, { attend: number; leave: number }> = {};
   for (const r of data.attendanceRecords) {
     if (r.studentId !== studentId) continue;
-    if (!attByCourse[r.courseId]) attByCourse[r.courseId] = { attend: 0, leave: 0, absent: 0 };
+    if (!attByCourse[r.courseId]) attByCourse[r.courseId] = { attend: 0, leave: 0 };
     if (r.status === '出勤') attByCourse[r.courseId].attend++;
     else if (r.status === '请假') attByCourse[r.courseId].leave++;
-    else if (r.status === '旷课') attByCourse[r.courseId].absent++;
   }
 
   const hwByCourse: Record<ID, { done: number; undone: number }> = {};
@@ -488,7 +487,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
 
       {/* Per-course sections */}
       {courseGroups.map((group) => {
-        const att = attByCourse[group.courseId] ?? { attend: 0, leave: 0, absent: 0 };
+        const att = attByCourse[group.courseId] ?? { attend: 0, leave: 0 };
         const hw = hwByCourse[group.courseId] ?? { done: 0, undone: 0 };
         const groupPurch = group.cards.reduce((a, b) => a + b.purchasedClasses, 0);
         const groupUsed = group.cards.reduce((a, b) => a + b.usedClasses, 0);
@@ -508,7 +507,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
             </div>
 
             <div className="row" style={{ fontSize: 12, marginBottom: 8 }}>
-              <span>考勤：出 {att.attend} · 假 {att.leave} · 旷 {att.absent}</span>
+              <span>考勤：出 {att.attend} · 假 {att.leave}</span>
               <span>作业：交 {hw.done} · 未交 {hw.undone}</span>
             </div>
 
@@ -831,7 +830,7 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
     setNote(record.note);
   }, [record.id]);
 
-  const statusColor = record.status === '出勤' ? '#7c3aed' : record.status === '请假' ? '#f59e0b' : '#dc2626';
+  const statusColor = record.status === '出勤' ? '#7c3aed' : '#dc2626';
 
   if (!editing) {
     return (
@@ -869,7 +868,6 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
           <select value={status} onChange={(e) => setStatus(e.target.value as AttendanceStatus)}>
             <option value="出勤">出勤</option>
             <option value="请假">请假</option>
-            <option value="旷课">旷课</option>
           </select>
         </label>
         <label>
@@ -927,7 +925,6 @@ function StudentCalendarQuickAdd({ studentId, date, studentClasses }: { studentI
         <select value={status} onChange={(e) => setStatus(e.target.value as AttendanceStatus)}>
           <option value="出勤">出勤</option>
           <option value="请假">请假</option>
-          <option value="旷课">旷课</option>
         </select>
       </label>
       <label>

@@ -228,7 +228,6 @@ function ClassSummaryReport() {
           remaining: Math.max(totalPurch - totalUsed, 0),
           attend: attInRange.filter((r) => r.status === '出勤').length,
           leave: attInRange.filter((r) => r.status === '请假').length,
-          absent: attInRange.filter((r) => r.status === '旷课').length,
           homework: hwInRange.length,
         };
       })
@@ -274,17 +273,16 @@ function ClassSummaryReport() {
       const allCards = data.courseCards.filter((cc) => cc.studentId === student.id && cc.courseId === selectedClass.courseId);
       const totalPurch = allCards.reduce((a, b) => a + b.purchasedClasses, 0);
       const totalUsed = allCards.reduce((a, b) => a + b.usedClasses, 0);
-      let attendCnt = 0, leaveCnt = 0, absentCnt = 0, hwDone = 0;
+      let attendCnt = 0, leaveCnt = 0, hwDone = 0;
       for (const d of dateHeaders) {
         const c = cells[d];
         if (c) {
           if (c.att === '出勤') attendCnt++;
           else if (c.att === '请假') leaveCnt++;
-          else if (c.att === '旷课') absentCnt++;
           if (c.hw === '已提交') hwDone++;
         }
       }
-      return { totalPurch, totalUsed, remaining: Math.max(totalPurch - totalUsed, 0), attendCnt, leaveCnt, absentCnt, hwDone, cells };
+      return { totalPurch, totalUsed, remaining: Math.max(totalPurch - totalUsed, 0), attendCnt, leaveCnt, hwDone, cells };
     });
 
     const result: string[][] = [];
@@ -297,10 +295,9 @@ function ClassSummaryReport() {
     const remainRow = ['剩余', ...studentStats.map((s) => String(s.remaining))];
     const attRow = ['出勤', ...studentStats.map((s) => String(s.attendCnt))];
     const leaveRow = ['请假', ...studentStats.map((s) => String(s.leaveCnt))];
-    const absentRow = ['旷课', ...studentStats.map((s) => String(s.absentCnt))];
     const hwRow = ['作业已交', ...studentStats.map((s) => String(s.hwDone))];
 
-    result.push(nameHeader, courseRow, purchRow, usedRow, remainRow, attRow, leaveRow, absentRow, hwRow, []);
+    result.push(nameHeader, courseRow, purchRow, usedRow, remainRow, attRow, leaveRow, hwRow, []);
 
     // Row per date
     for (const d of dateHeaders) {
@@ -367,7 +364,6 @@ function ClassSummaryReport() {
                   <th>剩余</th>
                   <th>出勤</th>
                   <th>请假</th>
-                  <th>旷课</th>
                   <th>作业</th>
                 </tr>
               </thead>
@@ -381,7 +377,6 @@ function ClassSummaryReport() {
                     <td style={{ color: r.remaining <= 5 ? 'var(--danger)' : undefined, fontWeight: 500 }}>{r.remaining}</td>
                     <td>{r.attend}</td>
                     <td>{r.leave}</td>
-                    <td>{r.absent}</td>
                     <td>{r.homework}</td>
                   </tr>
                 ))}
@@ -437,7 +432,6 @@ function StudentDetailReport() {
   const attStats = useMemo(() => ({
     attend: attendanceData.filter((r) => r.status === '出勤').length,
     leave: attendanceData.filter((r) => r.status === '请假').length,
-    absent: attendanceData.filter((r) => r.status === '旷课').length,
   }), [attendanceData]);
 
   const hwStats = useMemo(() => ({
@@ -557,7 +551,6 @@ function StudentDetailReport() {
             <div className="stats">
               <div className="stat"><span>出勤</span><strong>{attStats.attend}</strong></div>
               <div className="stat"><span>请假</span><strong>{attStats.leave}</strong></div>
-              <div className="stat"><span>旷课</span><strong style={{ color: attStats.absent > 0 ? 'var(--danger)' : undefined }}>{attStats.absent}</strong></div>
             </div>
             <div className="stats" style={{ marginTop: 8 }}>
               <div className="stat"><span>作业已交</span><strong>{hwStats.done}</strong></div>
@@ -590,7 +583,7 @@ function StudentDetailReport() {
                     {attendanceData.map((r) => {
                       const cls = data.classes.find((c) => c.id === r.classId);
                       const course = data.courses.find((c) => c.id === r.courseId);
-                      const statusColor = r.status === '出勤' ? '#7c3aed' : r.status === '请假' ? '#f59e0b' : '#dc2626';
+                      const statusColor = r.status === '出勤' ? '#7c3aed' : '#dc2626';
                       return (
                         <tr key={r.id}>
                           <td>{formatDate(r.date)}</td>

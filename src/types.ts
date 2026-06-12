@@ -33,7 +33,7 @@ export interface CourseCard {
   createdAt: string;
 }
 
-export type AttendanceStatus = '出勤' | '请假' | '旷课';
+export type AttendanceStatus = '出勤' | '请假';
 
 export interface AttendanceRecord {
   id: ID;
@@ -110,7 +110,7 @@ export interface FlashMessage {
   text: string;
 }
 
-export const ATTENDANCE_STATUSES: AttendanceStatus[] = ['出勤', '请假', '旷课'];
+export const ATTENDANCE_STATUSES: AttendanceStatus[] = ['出勤', '请假'];
 export const HOMEWORK_STATUSES: HomeworkStatus[] = ['已提交', '未提交'];
 
 export interface Workspace {

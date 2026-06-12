@@ -238,7 +238,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
     });
   };
 
-  const attOptions: AttendanceStatus[] = ['出勤', '请假', '旷课'];
+  const attOptions: AttendanceStatus[] = ['出勤', '请假'];
   const hwOptions: HomeworkStatus[] = ['已提交', '未提交'];
 
   return (
@@ -264,7 +264,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
                 onClick={() => handleAttToggle(opt)}
                 style={{
                   border: 'none',
-                  background: currentAtt === opt ? 'var(--primary)' : 'transparent',
+                  background: currentAtt === opt ? (opt === '请假' ? 'var(--danger)' : 'var(--primary)') : 'transparent',
                   color: currentAtt === opt ? '#fff' : 'var(--muted)',
                   borderRadius: 8,
                   padding: '5px 10px',

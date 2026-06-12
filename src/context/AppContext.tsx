@@ -102,6 +102,7 @@ interface AppContextValue {
 
   // Workspace
   createWorkspace: (name: string) => Promise<void>;
+  renameWorkspace: (id: ID, name: string) => Promise<void>;
   switchWorkspace: (id: ID) => Promise<void>;
   deleteWorkspace: (id: ID) => Promise<void>;
 
@@ -295,6 +296,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       flash('error', '删除失败，请重试');
     }
   }, [workspaces, workspaceId, flash]);
+
+  const renameWorkspace = useCallback(async (id: ID, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) { flash('error', '名称不能为空'); return; }
+    try {
+      if (id === workspaceId) {
+        await db.saveWorkspace(id, trimmed, data);
+        setWorkspaceName(trimmed);
+      } else {
+        const ws = workspaces.find(w => w.id === id);
+        if (!ws) return;
+        await db.saveWorkspace(id, trimmed, ws.data);
+      }
+      setWorkspaces(prev => prev.map(w => w.id === id ? { ...w, name: trimmed } : w));
+      flash('success', `已重命名为「${trimmed}」`);
+    } catch {
+      flash('error', '重命名失败，请重试');
+    }
+  }, [workspaces, workspaceId, workspaceName, data, flash]);
 
   // ---- CRUD: Course (sync) ----
   const createCourse = useCallback((name: string) => {
@@ -672,7 +692,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value: AppContextValue = {
     state,
     flash, setTab, setDate, setClassId, openStudentCalendar, closeStudentCalendar,
-    createWorkspace, switchWorkspace, deleteWorkspace,
+    createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace,
     createCourse, updateCourse, deleteCourse,
     createClass, updateClass, deleteClass,
     createStudent, attachStudent, removeStudent, updateStudent,

@@ -13,7 +13,7 @@ function downloadText(filename: string, content: string, type: string) {
 }
 
 export default function Settings() {
-  const { state, flash, createCourse, updateCourse, deleteCourse, createWorkspace, switchWorkspace, deleteWorkspace, exportBackup, importBackup } = useAppContext();
+  const { state, flash, createCourse, updateCourse, deleteCourse, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace, exportBackup, importBackup } = useAppContext();
   const { data, workspaceId, workspaceName, workspaces } = state;
 
   // Course editing
@@ -31,6 +31,12 @@ export default function Settings() {
   const [switchTargetId, setSwitchTargetId] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+
+  // Rename password verification
+  const [renameTargetId, setRenameTargetId] = useState('');
+  const [renamePassword, setRenamePassword] = useState('');
+  const [renameNewName, setRenameNewName] = useState('');
+  const [renamePasswordError, setRenamePasswordError] = useState(false);
 
   const importRef = useRef<HTMLInputElement | null>(null);
 
@@ -82,6 +88,11 @@ export default function Settings() {
                 {ws.id !== workspaceId ? (
                   <button className="primary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => { setSwitchTargetId(ws.id); setAdminPassword(''); setPasswordError(false); }}>
                     切换到此版本
+                  </button>
+                ) : null}
+                {ws.id === workspaceId ? (
+                  <button className="ghost" style={{ fontSize: 11, padding: '4px 10px' }} onClick={() => { setRenameTargetId(ws.id); setRenameNewName(ws.name); setRenamePassword(''); setRenamePasswordError(false); }}>
+                    重命名
                   </button>
                 ) : null}
                 {ws.id === workspaceId && workspaces.length > 1 ? (
@@ -343,6 +354,66 @@ export default function Settings() {
                   setPasswordError(true);
                 }
               }}>验证并切换</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Rename Workspace Sheet */}
+      {renameTargetId ? (
+        <div className="sheet-backdrop" onClick={() => { setRenameTargetId(''); setRenamePasswordError(false); }}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-head">
+              <button className="ghost" onClick={() => { setRenameTargetId(''); setRenamePasswordError(false); }}>取消</button>
+              <strong>重命名数据版本</strong>
+              <div />
+            </div>
+            <p style={{ textAlign: 'center', margin: '8px 0 16px', color: 'var(--muted)', fontSize: 13 }}>
+              重命名「{workspaces.find((w) => w.id === renameTargetId)?.name ?? ''}」需要管理员密码
+            </p>
+            <div className="form-grid">
+              <label>
+                <span>新名称</span>
+                <input
+                  value={renameNewName}
+                  onChange={(e) => setRenameNewName(e.target.value)}
+                  placeholder="输入新名称"
+                  autoFocus
+                />
+              </label>
+              <label>
+                <span>管理员密码</span>
+                <input
+                  type="password"
+                  value={renamePassword}
+                  onChange={(e) => { setRenamePassword(e.target.value); setRenamePasswordError(false); }}
+                  placeholder="请输入密码"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && renameNewName.trim()) {
+                      if (renamePassword === '135791') {
+                        renameWorkspace(renameTargetId, renameNewName.trim());
+                        setRenameTargetId('');
+                      } else {
+                        setRenamePasswordError(true);
+                      }
+                    }
+                  }}
+                />
+              </label>
+              {renamePasswordError ? (
+                <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0, textAlign: 'center' }}>密码错误</p>
+              ) : null}
+            </div>
+            <div className="actions-row" style={{ justifyContent: 'center', marginTop: 12 }}>
+              <button className="ghost" onClick={() => { setRenameTargetId(''); setRenamePasswordError(false); }}>取消</button>
+              <button className="primary" disabled={!renameNewName.trim() || !renamePassword} onClick={() => {
+                if (renamePassword === '135791') {
+                  renameWorkspace(renameTargetId, renameNewName.trim());
+                  setRenameTargetId('');
+                } else {
+                  setRenamePasswordError(true);
+                }
+              }}>确认重命名</button>
             </div>
           </div>
         </div>

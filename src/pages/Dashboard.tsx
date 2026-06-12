@@ -246,7 +246,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
       {/* Left: name + info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {hasRecord ? <i className="dot purple" /> : null}
+          {hasRecord ? <i className={`dot ${currentAtt === '出勤' ? 'purple' : 'red'}`} /> : null}
           <strong style={{ fontSize: 15 }}>{student.name}</strong>
         </div>
         <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>

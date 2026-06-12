@@ -13,7 +13,7 @@ function downloadText(filename: string, content: string, type: string) {
 }
 
 export default function Settings() {
-  const { state, flash, createCourse, deleteCourse, createWorkspace, switchWorkspace, deleteWorkspace, exportBackup, importBackup } = useAppContext();
+  const { state, flash, createCourse, updateCourse, deleteCourse, createWorkspace, switchWorkspace, deleteWorkspace, exportBackup, importBackup } = useAppContext();
   const { data, workspaceId, workspaceName, workspaces } = state;
 
   // Course editing
@@ -144,22 +144,77 @@ export default function Settings() {
 
         <div className="cards">
           {data.courses.length === 0 ? <Empty text="当前还没有课程。" /> : null}
-          {data.courses.map((course) => (
+          {data.courses.map((course) => {
+            const boundClasses = data.classes.filter((c) => c.courseId === course.id);
+            const [renaming, setRenaming] = useState(false);
+            const [newName, setNewName] = useState(course.name);
+            const canDelete = boundClasses.length === 0 &&
+              data.courseCards.filter((cc) => cc.courseId === course.id).length === 0;
+
+            return (
             <div className="mini-card" key={course.id}>
-              <div className="mini-card-title">
-                <strong>{course.name}</strong>
-                <span>{formatDate(course.createdAt)}</span>
+              {!renaming ? (
+                <div className="mini-card-title">
+                  <strong>{course.name}</strong>
+                  <span>{formatDate(course.createdAt)}</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    style={{ flex: 1, padding: '8px 12px', fontSize: 14, minHeight: 'auto' }}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newName.trim() && newName.trim() !== course.name) {
+                        updateCourse(course.id, newName.trim());
+                        setRenaming(false);
+                      } else if (e.key === 'Escape') {
+                        setRenaming(false);
+                        setNewName(course.name);
+                      }
+                    }}
+                  />
+                  <button className="primary" style={{ padding: '8px 14px', fontSize: 13, minHeight: 'auto' }}
+                    onClick={() => {
+                      if (newName.trim() && newName.trim() !== course.name) {
+                        updateCourse(course.id, newName.trim());
+                      }
+                      setRenaming(false);
+                    }}
+                    disabled={!newName.trim()}
+                  >确认</button>
+                  <button className="ghost" style={{ padding: '8px 12px', fontSize: 13, minHeight: 'auto' }}
+                    onClick={() => { setRenaming(false); setNewName(course.name); }}
+                  >取消</button>
+                </div>
+              )}
+              <div className="row" style={{ marginBottom: boundClasses.length > 0 ? 6 : 0 }}>
+                <span>关联班级 {boundClasses.length}</span>
+                <span>课时卡 {data.courseCards.filter((cc) => cc.courseId === course.id).length}</span>
               </div>
-              <div className="row">
-                <span>关联班级 {data.classes.filter((c) => c.courseId === course.id).length}</span>
-                <span>关联购课 {data.courseCards.filter((cc) => cc.courseId === course.id).length}</span>
-              </div>
+              {boundClasses.length > 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: editing ? 8 : 0 }}>
+                  班级：{boundClasses.map((c) => c.name).join('、')}
+                </div>
+              ) : null}
               {editing ? (
-                <button className="ghost danger" style={{ marginTop: 6, padding: '4px 10px', fontSize: 12 }}
-                  onClick={() => deleteCourse(course.id)}>删除</button>
+                <div className="actions-row" style={{ marginTop: 4, gap: 6 }}>
+                  {!renaming ? (
+                    <button className="ghost" style={{ fontSize: 12, padding: '4px 10px' }}
+                      onClick={() => { setNewName(course.name); setRenaming(true); }}
+                    >重命名</button>
+                  ) : null}
+                  <button className="ghost danger" style={{ fontSize: 12, padding: '4px 10px' }}
+                    disabled={!canDelete}
+                    onClick={() => deleteCourse(course.id)}
+                    title={!canDelete ? '课程已被班级或课时卡引用，无法删除' : ''}
+                  >删除</button>
+                </div>
               ) : null}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {editing ? (

@@ -107,6 +107,7 @@ interface AppContextValue {
 
   // CRUD - all sync (auto-save handles persistence)
   createCourse: (name: string) => void;
+  updateCourse: (id: ID, name: string) => void;
   deleteCourse: (id: ID) => void;
   createClass: (name: string, existingCourseId: string, newCourseName: string) => void;
   updateClass: (classId: ID, name: string, courseId: ID) => void;
@@ -314,6 +315,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       flash('success', '已删除课程');
       return { ...prev, courses: prev.courses.filter(c => c.id !== id), updatedAt: new Date().toISOString() };
     });
+  }, [flash]);
+
+  const updateCourse = useCallback((id: ID, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) { flash('error', '课程名称不能为空'); return; }
+    setData(prev => ({
+      ...prev,
+      courses: prev.courses.map(c => c.id === id ? { ...c, name: trimmed } : c),
+      updatedAt: new Date().toISOString(),
+    }));
+    flash('success', '课程名称已更新');
   }, [flash]);
 
   // ---- CRUD: Class (sync) ----
@@ -661,7 +673,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     state,
     flash, setTab, setDate, setClassId, openStudentCalendar, closeStudentCalendar,
     createWorkspace, switchWorkspace, deleteWorkspace,
-    createCourse, deleteCourse,
+    createCourse, updateCourse, deleteCourse,
     createClass, updateClass, deleteClass,
     createStudent, attachStudent, removeStudent, updateStudent,
     purchaseCard, deleteCard,

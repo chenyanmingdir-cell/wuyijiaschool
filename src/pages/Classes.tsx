@@ -247,7 +247,6 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
   const course = courses.find((c) => c.id === cls.courseId);
 
   const [editName, setEditName] = useState(cls.name);
-  const [editCourseId, setEditCourseId] = useState(cls.courseId || courses[0]?.id || '');
   const [editingClass, setEditingClass] = useState(false);
 
   const classStudents = cls.studentIds
@@ -264,7 +263,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
           </div>
           {!editingClass ? (
             <button className="ghost" style={{ fontSize: 13, padding: '6px 12px' }}
-              onClick={() => { setEditName(cls.name); setEditCourseId(cls.courseId || courses[0]?.id || ''); setEditingClass(true); }}
+              onClick={() => { setEditName(cls.name); setEditingClass(true); }}
             >编辑</button>
           ) : (
             <button className="ghost" style={{ fontSize: 12 }} onClick={() => setEditingClass(false)}>收起</button>
@@ -283,15 +282,20 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
                 <span>班级名称</span>
                 <input value={editName} onChange={(e) => setEditName(e.target.value)} />
               </label>
-              <label>
-                <span>绑定课程</span>
-                <select value={editCourseId || courses[0]?.id || ''} onChange={(e) => setEditCourseId(e.target.value)}>
-                  {courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <span style={{ fontSize: 13, color: 'var(--muted)' }}>绑定课程（不可更改）</span>
+                <div style={{
+                  padding: '12px 14px', borderRadius: 14, fontSize: 15,
+                  background: 'var(--bg)', boxShadow: 'var(--neu-inset)',
+                  color: 'var(--muted)',
+                }}>
+                  {course?.name ?? '未绑定课程'}
+                </div>
+                <div className="field-hint">课程绑定后在设置页可修改课程名称</div>
+              </div>
             </div>
             <div className="actions-row">
-              <button className="primary" onClick={() => { updateClass(cls.id, editName, editCourseId); setEditingClass(false); }}>保存</button>
+              <button className="primary" onClick={() => { updateClass(cls.id, editName, cls.courseId); setEditingClass(false); }}>保存</button>
               <button className="ghost danger" onClick={() => deleteClass(cls.id)}>删除班级</button>
             </div>
           </>

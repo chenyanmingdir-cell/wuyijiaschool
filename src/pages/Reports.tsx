@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { ID, AttendanceRecord, HomeworkRecord } from '../types';
-import { formatDate, isoDateOnly, toCSV } from '../utils';
+import { formatDate, isoDateOnly, sortCourseCardsFIFO, toCSV } from '../utils';
 import Empty from '../components/Empty';
 
 // ============================================================
@@ -447,7 +447,7 @@ function StudentDetailReport() {
 
   const csvRows = useMemo(() => {
     if (!student) return [];
-    const header = ['学员', '班级', '日期', '课程', '考勤', '课程卡', '作业', '开始日期', '结束日期'];
+    const header = ['学员', '班级', '日期', '课程', '考勤', '课程卡（按日期动态剩余）', '作业', '开始日期', '结束日期'];
     const rows: string[][] = [header];
 
     // Merge attendance and homework by date+classId
@@ -465,24 +465,45 @@ function StudentDetailReport() {
       dateMap.set(key, entry);
     }
 
-    const merged = [...dateMap.entries()].sort(([a], [b]) => b.split('|')[0].localeCompare(a.split('|')[0]));
+    // Sort by class name, then date ascending
+    const merged = [...dateMap.entries()].sort(([a], [b]) => {
+      const [dateA, classA] = a.split('|');
+      const [dateB, classB] = b.split('|');
+      const clsNameA = data.classes.find((c) => c.id === classA)?.name ?? '';
+      const clsNameB = data.classes.find((c) => c.id === classB)?.name ?? '';
+      if (clsNameA !== clsNameB) return clsNameA.localeCompare(clsNameB);
+      return dateA.localeCompare(dateB);
+    });
 
     for (const [, { att, hw }] of merged) {
       const rec = att || hw;
       if (!rec) continue;
       const cls = data.classes.find((c) => c.id === rec.classId);
       const course = data.courses.find((c) => c.id === rec.courseId);
+      const rowDate = isoDateOnly(rec.date);
 
-      // Course card summary for this student + course
-      const cards = data.courseCards.filter((cc) => cc.studentId === studentId && cc.courseId === rec.courseId);
+      // Dynamic course card state: calculate used/remaining up to this row's date
+      const cards = sortCourseCardsFIFO(
+        data.courseCards.filter((cc) => cc.studentId === studentId && cc.courseId === rec.courseId)
+      );
       const cardSummary = cards.length > 0
-        ? cards.map((cc) => `购${cc.purchasedClasses}用${cc.usedClasses}剩${cc.purchasedClasses - cc.usedClasses}`).join('；')
+        ? cards.map((cc) => {
+            // Count attendance records linked to this card up to (and including) this date
+            const usedUpToDate = data.attendanceRecords.filter(
+              (a) => a.courseCardId === cc.id &&
+                     a.studentId === studentId &&
+                     a.status === '出勤' &&
+                     isoDateOnly(a.date) <= rowDate
+            ).length;
+            const remaining = cc.purchasedClasses - usedUpToDate;
+            return `购${cc.purchasedClasses}用${usedUpToDate}剩${remaining}`;
+          }).join('；')
         : '无';
 
       rows.push([
         student.name,
         cls?.name ?? '',
-        isoDateOnly(rec.date),
+        rowDate,
         course?.name ?? '',
         att?.status ?? '无记录',
         cardSummary,

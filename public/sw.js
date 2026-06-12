@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wuyijia-pwa-v3';
+const CACHE_NAME = 'wuyijia-pwa-v4';
 const PRECACHE_URLS = ['/', '/index.html', '/manifest.webmanifest', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {

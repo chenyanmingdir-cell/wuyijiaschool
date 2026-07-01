@@ -14,6 +14,20 @@ function toWorkspace(db: DbWorkspace): Workspace {
   };
 }
 
+function isValidAppData(data: any): data is AppData {
+  return (
+    data &&
+    typeof data === 'object' &&
+    data.version === 1 &&
+    Array.isArray(data.classes) &&
+    Array.isArray(data.students) &&
+    Array.isArray(data.courses) &&
+    Array.isArray(data.courseCards) &&
+    Array.isArray(data.attendanceRecords) &&
+    Array.isArray(data.homeworkRecords)
+  );
+}
+
 // ============================================================
 // Workspaces
 // ============================================================
@@ -25,7 +39,15 @@ export async function listWorkspaces(): Promise<Workspace[]> {
     .order('created_at', { ascending: true });
 
   if (error) throw error;
-  return (data as DbWorkspace[]).map(toWorkspace);
+  return (data as DbWorkspace[])
+    .map(toWorkspace)
+    .filter((ws) => {
+      if (!isValidAppData(ws.data)) {
+        console.warn('[db] 跳过数据格式不兼容的工作区:', ws.id, ws.name);
+        return false;
+      }
+      return true;
+    });
 }
 
 export async function createWorkspace(name: string, initialData: AppData): Promise<Workspace> {

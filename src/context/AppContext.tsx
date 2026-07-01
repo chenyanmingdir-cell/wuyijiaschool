@@ -181,12 +181,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (savedId) targetWs = list.find(w => w.id === savedId);
         if (!targetWs) targetWs = list[0];
 
-        if (targetWs) {
+        if (targetWs && targetWs.data && targetWs.data.version === 1 && Array.isArray(targetWs.data.classes)) {
           setWorkspaces(list);
           setWorkspaceId(targetWs.id);
           setWorkspaceName(targetWs.name);
           setData(targetWs.data);
           if (savedId !== targetWs.id) localStorage.setItem(WS_KEY, targetWs.id);
+        } else if (targetWs) {
+          // Workspace exists but data is corrupted — skip it and fall back to empty
+          console.warn('[AppContext] 当前工作区数据异常，已回退到空数据');
+          setWorkspaces(list);
+          setWorkspaceId('');
+          setWorkspaceName('');
+          setData(createEmptyData());
+          localStorage.removeItem(WS_KEY);
         } else {
           // No workspaces at all: let user create one via onboarding
           setWorkspaces([]);

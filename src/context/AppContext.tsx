@@ -6,6 +6,7 @@ import type {
 } from '../types';
 import { createEmptyData, isoDateOnly, uid, sortCourseCardsFIFO } from '../utils';
 import * as db from '../db';
+import * as storage from '../storage';
 
 // ============================================================
 // UI State (reducer for non-data UI only)
@@ -187,6 +188,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setWorkspaceName(targetWs.name);
           setData(targetWs.data);
           if (savedId !== targetWs.id) localStorage.setItem(WS_KEY, targetWs.id);
+          // Save local backup
+          storage.saveAppState(targetWs.data).catch(() => {});
         } else if (targetWs) {
           // Workspace exists but data is corrupted — skip it and fall back to empty
           console.warn('[AppContext] 当前工作区数据异常，已回退到空数据');
@@ -196,14 +199,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setData(createEmptyData());
           localStorage.removeItem(WS_KEY);
         } else {
-          // No workspaces at all: let user create one via onboarding
+          // No Supabase workspaces: try local backup
+          const localData = await storage.loadAppState<AppData>().catch(() => null);
+          if (localData && localData.version === 1 && Array.isArray(localData.classes)) {
+            console.warn('[AppContext] Supabase 无数据，已从本地备份恢复');
+            setWorkspaces([]);
+            setWorkspaceId('');
+            setWorkspaceName('');
+            setData(localData);
+          } else {
+            // No workspaces at all: let user create one via onboarding
+            setWorkspaces([]);
+            setWorkspaceId('');
+            setWorkspaceName('');
+            setData(createEmptyData());
+          }
+        }
+      } catch {
+        // Supabase offline: try local backup
+        const localData = await storage.loadAppState<AppData>().catch(() => null);
+        if (localData && localData.version === 1 && Array.isArray(localData.classes)) {
+          console.warn('[AppContext] Supabase 不可用，已从本地备份恢复');
           setWorkspaces([]);
           setWorkspaceId('');
           setWorkspaceName('');
-          setData(createEmptyData());
+          setData(localData);
         }
-      } catch {
-        // Offline or error - keep empty data
+        // else keep empty data
       } finally {
         uiDispatch({ type: 'INIT_DONE' });
       }
@@ -236,6 +258,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!workspaceId) return;
     saveVersion.current += 1;
     const v = saveVersion.current;
+
+    // Always save to local backup immediately (fast, no network)
+    storage.saveAppState(data).catch(() => {});
 
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {

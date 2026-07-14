@@ -191,7 +191,7 @@ interface DailyStudentRowProps {
 }
 
 function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowProps) {
-  const { state, saveAttendance, saveHomework, openStudentCalendar } = useAppContext();
+  const { state, saveAttendance, deleteAttendance, saveHomework, deleteHomework, openStudentCalendar } = useAppContext();
   const { data } = state;
 
   const course = data.courses.find((c) => c.id === schoolClass.courseId);
@@ -206,36 +206,46 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
     (h) => h.studentId === student.id && h.classId === schoolClass.id && h.date === date
   ) ?? null;
 
-  const currentAtt = existingAtt?.status ?? '出勤';
-  const currentHw = existingHw?.status ?? '已提交';
+  const currentAtt = existingAtt?.status ?? null;
+  const currentHw = existingHw?.status ?? null;
   const hasRecord = mode === 'attendance' ? Boolean(existingAtt) : Boolean(existingHw);
 
-  // Auto-save attendance on toggle
+  // Toggle attendance: click same = cancel, click different = save/switch
   const handleAttToggle = (status: AttendanceStatus) => {
-    saveAttendance({
-      id: existingAtt?.id ?? uid(),
-      studentId: student.id,
-      classId: schoolClass.id,
-      courseId: schoolClass.courseId,
-      date,
-      status,
-      courseCardId: existingAtt?.courseCardId ?? null,
-      note: existingAtt?.note ?? '',
-      selectedCourseCardId: existingAtt?.courseCardId ?? null,
-    });
+    if (currentAtt === status) {
+      // Cancel: delete the record
+      if (existingAtt) deleteAttendance(existingAtt.id);
+    } else {
+      saveAttendance({
+        id: existingAtt?.id ?? uid(),
+        studentId: student.id,
+        classId: schoolClass.id,
+        courseId: schoolClass.courseId,
+        date,
+        status,
+        courseCardId: existingAtt?.courseCardId ?? null,
+        note: existingAtt?.note ?? '',
+        selectedCourseCardId: existingAtt?.courseCardId ?? null,
+      });
+    }
   };
 
-  // Auto-save homework on toggle
+  // Toggle homework: click same = cancel, click different = save/switch
   const handleHwToggle = (status: HomeworkStatus) => {
-    saveHomework({
-      id: existingHw?.id ?? uid(),
-      studentId: student.id,
-      classId: schoolClass.id,
-      courseId: schoolClass.courseId,
-      date,
-      status,
-      content: existingHw?.content ?? '',
-    });
+    if (currentHw === status) {
+      // Cancel: delete the record
+      if (existingHw) deleteHomework(existingHw.id);
+    } else {
+      saveHomework({
+        id: existingHw?.id ?? uid(),
+        studentId: student.id,
+        classId: schoolClass.id,
+        courseId: schoolClass.courseId,
+        date,
+        status,
+        content: existingHw?.content ?? '',
+      });
+    }
   };
 
   const attOptions: AttendanceStatus[] = ['出勤', '请假'];

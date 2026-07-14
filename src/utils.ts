@@ -1,4 +1,5 @@
 import type { AppData, AttendanceRecord, CourseCard, DashboardDayFlags, HomeworkRecord, ID } from './types';
+import { APP_NAME } from './types';
 
 export function uid(): ID {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -57,6 +58,7 @@ export function toCSV(rows: string[][]): string {
 export function createEmptyData(): AppData {
   return {
     version: 1,
+    app_name: APP_NAME,
     updatedAt: new Date().toISOString(),
     courses: [],
     classes: [],

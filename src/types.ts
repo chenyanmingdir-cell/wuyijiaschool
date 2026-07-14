@@ -60,8 +60,11 @@ export interface HomeworkRecord {
   createdAt: string;
 }
 
+export const APP_NAME = 'wuyijiaschool';
+
 export interface AppData {
   version: 1;
+  app_name: string;
   updatedAt: string;
   courses: Course[];
   classes: SchoolClass[];

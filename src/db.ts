@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { AppData, Workspace } from './types';
+import { APP_NAME } from './types';
 
 export { supabase };
 
@@ -28,6 +29,12 @@ function isValidAppData(data: any): data is AppData {
   );
 }
 
+function belongsToThisApp(data: any): boolean {
+  // If app_name is not set (legacy data), assume it belongs to this app
+  if (!data.app_name) return true;
+  return data.app_name === APP_NAME;
+}
+
 // ============================================================
 // Workspaces
 // ============================================================
@@ -42,6 +49,10 @@ export async function listWorkspaces(): Promise<Workspace[]> {
   return (data as DbWorkspace[])
     .map(toWorkspace)
     .filter((ws) => {
+      if (!belongsToThisApp(ws.data)) {
+        console.warn('[db] 跳过其他应用的工作区:', ws.id, ws.name);
+        return false;
+      }
       if (!isValidAppData(ws.data)) {
         console.warn('[db] 跳过数据格式不兼容的工作区:', ws.id, ws.name);
         return false;

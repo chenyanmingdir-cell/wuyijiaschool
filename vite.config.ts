@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: process.env.VERCEL ? '/' : '/wuyijiaschool/',
+  base: (process.env.VERCEL || process.env.CF_PAGES) ? '/' : '/wuyijiaschool/',
   plugins: [react()],
   server: {
     host: '0.0.0.0',

@@ -166,7 +166,7 @@ function StudentListScreen({ push }: { push(s: Screen): void }) {
             >
               <div className="mini-card-title">
                 <strong>{student.name}</strong>
-                <span>剩余 {totalPending} 节</span>
+                <span>{totalPending >= 0 ? `剩余 ${totalPending} 节` : `欠课 ${Math.abs(totalPending)} 节`}</span>
               </div>
               <div className="row">
                 <span className="muted" style={{ fontSize: 12 }}>
@@ -322,7 +322,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
               >
                 <div className="mini-card-title">
                   <strong>{student.name}</strong>
-                  <span>剩余 {remaining} 节</span>
+                  <span>{remaining >= 0 ? `剩余 ${remaining} 节` : `欠课 ${Math.abs(remaining)} 节`}</span>
                 </div>
                 <div className="row">
                   <span>{student.phone || '无电话'}</span>
@@ -521,7 +521,7 @@ function StudentDetailScreen({ classId: _classId, studentId, push }: { classId?:
                     </div>
                     <div className="row" style={{ marginTop: 2 }}>
                       <span className="muted">已用 {cc.usedClasses} 节</span>
-                      <span>剩余 {cc.purchasedClasses - cc.usedClasses} 节</span>
+                      {(() => { const r = cc.purchasedClasses - cc.usedClasses; return <span>{r >= 0 ? `剩余 ${r} 节` : `欠课 ${Math.abs(r)} 节`}</span>; })()}
                     </div>
                     {cc.usedClasses === 0 ? (
                       <button className="ghost danger" style={{ marginTop: 6, fontSize: 11, padding: '4px 10px' }}
@@ -704,7 +704,7 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
           </div>
         </div>
         <div className="stats" style={{ marginBottom: 0 }}>
-          <div className="stat"><span>剩余课时</span><strong>{totalRemaining}</strong></div>
+          <div className="stat"><span>剩余课时</span><strong style={totalRemaining < 0 ? { color: 'var(--danger)' } : undefined}>{totalRemaining < 0 ? `欠${Math.abs(totalRemaining)}` : totalRemaining}</strong></div>
           <div className="stat"><span>所在班级</span><strong>{studentClasses.length}</strong></div>
           <div className="stat"><span>课程卡</span><strong>{data.courseCards.filter((cc) => cc.studentId === studentId).length}</strong></div>
         </div>
@@ -1061,7 +1061,9 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="stat">
       <span>{label}</span>
-      <strong>{value}</strong>
+      <strong style={value < 0 ? { color: 'var(--danger)' } : undefined}>
+        {value < 0 ? `欠${Math.abs(value)}` : value}
+      </strong>
     </div>
   );
 }

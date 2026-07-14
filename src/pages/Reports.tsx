@@ -90,15 +90,15 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
       }
       entry.totalPurchased += card.purchasedClasses;
       entry.totalUsed += card.usedClasses;
-      entry.totalRemaining += Math.max(card.purchasedClasses - card.usedClasses, 0);
+      entry.totalRemaining += card.purchasedClasses - card.usedClasses;
       entry.details.push({
         id: card.id, purchasedAt: card.purchasedAt, purchasedClasses: card.purchasedClasses,
-        usedClasses: card.usedClasses, remainingClasses: Math.max(card.purchasedClasses - card.usedClasses, 0),
+        usedClasses: card.usedClasses, remainingClasses: card.purchasedClasses - card.usedClasses,
       });
     });
 
     return Array.from(groups.values())
-      .filter((e) => e.totalRemaining > 0 && e.totalRemaining <= 5)
+      .filter((e) => e.totalRemaining <= 5)
       .sort((a, b) => a.totalRemaining - b.totalRemaining || a.studentName.localeCompare(b.studentName));
   }, [data]);
 
@@ -140,7 +140,7 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
         <div className="panel-head">
           <div>
             <h2>剩余课时预警</h2>
-            <p className="muted">剩余 ≤ 5 节课时的学员</p>
+            <p className="muted">剩余 ≤ 5 节或已欠课的学员</p>
           </div>
         </div>
         {lowRemaining.length === 0 ? (
@@ -151,7 +151,9 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
               <div className="sub-card" key={`${item.studentName}-${item.courseName}`}>
                 <div className="row">
                   <strong>{item.studentName}</strong>
-                  <span style={{ color: 'var(--danger)', fontWeight: 600 }}>剩余 {item.totalRemaining} 节</span>
+                  <span style={{ color: 'var(--danger)', fontWeight: 600 }}>
+                    {item.totalRemaining >= 0 ? `剩余 ${item.totalRemaining} 节` : `欠课 ${Math.abs(item.totalRemaining)} 节`}
+                  </span>
                 </div>
                 <div className="row" style={{ marginTop: 2 }}>
                   <span>{item.courseName}</span>
@@ -165,7 +167,7 @@ function ReportsHome({ push }: { push(s: Screen): void }) {
                     <div className="purchase-pill" key={d.id}>
                       <strong>{formatDate(d.purchasedAt)}</strong>
                       <span>购 {d.purchasedClasses}</span>
-                      <span>剩 {d.remainingClasses}</span>
+                      <span>{d.remainingClasses >= 0 ? `剩 ${d.remainingClasses}` : `欠 ${Math.abs(d.remainingClasses)}`}</span>
                     </div>
                   ))}
                 </div>
@@ -225,7 +227,7 @@ function ClassSummaryReport() {
           courseName: course?.name ?? '',
           totalPurch,
           totalUsed,
-          remaining: Math.max(totalPurch - totalUsed, 0),
+          remaining: totalPurch - totalUsed,
           attend: attInRange.filter((r) => r.status === '出勤').length,
           leave: attInRange.filter((r) => r.status === '请假').length,
           homework: hwInRange.length,
@@ -282,7 +284,7 @@ function ClassSummaryReport() {
           if (c.hw === '已提交') hwDone++;
         }
       }
-      return { totalPurch, totalUsed, remaining: Math.max(totalPurch - totalUsed, 0), attendCnt, leaveCnt, hwDone, cells };
+      return { totalPurch, totalUsed, remaining: totalPurch - totalUsed, attendCnt, leaveCnt, hwDone, cells };
     });
 
     const result: string[][] = [];
@@ -374,7 +376,9 @@ function ClassSummaryReport() {
                     <td>{r.courseName}</td>
                     <td>{r.totalPurch}</td>
                     <td>{r.totalUsed}</td>
-                    <td style={{ color: r.remaining <= 5 ? 'var(--danger)' : undefined, fontWeight: 500 }}>{r.remaining}</td>
+                    <td style={{ color: r.remaining < 0 ? 'var(--danger)' : r.remaining <= 5 ? 'var(--danger)' : undefined, fontWeight: 500 }}>
+                      {r.remaining < 0 ? `欠${Math.abs(r.remaining)}` : r.remaining}
+                    </td>
                     <td>{r.attend}</td>
                     <td>{r.leave}</td>
                     <td>{r.homework}</td>

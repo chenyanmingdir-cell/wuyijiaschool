@@ -105,7 +105,7 @@ export function classFlagsForClassDay(data: AppData, classId: ID, date: string):
 export function totalRemainingForCourse(data: AppData, studentId: ID, courseId: ID): number {
   return data.courseCards
     .filter((card) => card.studentId === studentId && card.courseId === courseId)
-    .reduce((sum, card) => sum + Math.max(card.purchasedClasses - card.usedClasses, 0), 0);
+    .reduce((sum, card) => sum + card.purchasedClasses - card.usedClasses, 0);
 }
 
 export function sortCourseCardsFIFO(cards: CourseCard[]): CourseCard[] {

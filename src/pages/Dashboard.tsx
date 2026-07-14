@@ -260,7 +260,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
           <strong style={{ fontSize: 15 }}>{student.name}</strong>
         </div>
         <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
-          {course?.name ?? '未分课'}{remaining > 0 ? ` · 剩${remaining}节` : ''}
+          {course?.name ?? '未分课'}{remaining !== 0 ? (remaining > 0 ? ` · 剩${remaining}节` : ` · 欠${Math.abs(remaining)}节`) : ''}
         </div>
       </div>
 

@@ -65,14 +65,25 @@ function initUI(): UIState {
 function consumes(status: AttendanceStatus) { return status === '出勤'; }
 
 function resolveFIFOCard(cards: CourseCard[], studentId: ID, courseId: ID, preferredId: ID | null) {
+  // First, try cards with remaining classes
   const eligible = sortCourseCardsFIFO(
     cards.filter((c) => c.studentId === studentId && c.courseId === courseId && c.purchasedClasses > c.usedClasses)
   );
   if (preferredId) {
     const found = eligible.find((c) => c.id === preferredId);
-    if (found) return found;
+    if (found) return { card: found, isOverspent: false };
   }
-  return eligible[0] ?? null;
+  if (eligible[0]) return { card: eligible[0], isOverspent: false };
+
+  // No remaining classes: fall back to the last card for this student+course (allow over-use / 欠课)
+  const allCards = sortCourseCardsFIFO(
+    cards.filter((c) => c.studentId === studentId && c.courseId === courseId)
+  );
+  if (preferredId) {
+    const found = allCards.find((c) => c.id === preferredId);
+    if (found) return { card: found, isOverspent: true };
+  }
+  return allCards[0] ? { card: allCards[0], isOverspent: true } : null;
 }
 
 const WS_KEY = 'wuyijiaschool:workspaceId';
@@ -590,10 +601,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       let resolvedId: ID | null = selectedCourseCardId ?? (payload as any).courseCardId ?? null;
       if (consumes(status)) {
-        const chosen = resolveFIFOCard(courseCards, studentId, courseId, resolvedId);
-        if (!chosen) { flash('error', '课程卡剩余课时不足'); return prev; }
-        chosen.usedClasses += 1;
-        resolvedId = chosen.id;
+        const result = resolveFIFOCard(courseCards, studentId, courseId, resolvedId);
+        if (!result) { flash('error', '该学员没有购课记录，请先购买课时卡'); return prev; }
+        result.card.usedClasses += 1;
+        resolvedId = result.card.id;
+        if (result.isOverspent) {
+          flash('info', '课时已用完，记入欠课');
+        }
       }
 
       const record: AttendanceRecord = {
@@ -659,21 +673,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       let newRecords: AttendanceRecord[] = [];
       let hasError = false;
 
+      let overspentCount = 0;
       for (const sid of cls.studentIds) {
         if (prev.attendanceRecords.some(r => r.studentId === sid && r.classId === classId && r.date === date)) continue;
-        const resolved = resolveFIFOCard(cards, sid, cls.courseId, null);
-        if (!resolved) { hasError = true; continue; }
-        resolved.usedClasses += 1;
-        newRecords.push({ id: uid(), studentId: sid, classId, courseId: cls.courseId, date, status: '出勤', courseCardId: resolved.id, note: '', createdAt: new Date().toISOString() });
+        const result = resolveFIFOCard(cards, sid, cls.courseId, null);
+        if (!result) { hasError = true; continue; }
+        result.card.usedClasses += 1;
+        if (result.isOverspent) overspentCount++;
+        newRecords.push({ id: uid(), studentId: sid, classId, courseId: cls.courseId, date, status: '出勤', courseCardId: result.card.id, note: '', createdAt: new Date().toISOString() });
       }
 
       if (newRecords.length === 0) {
-        if (hasError) flash('error', '部分学员课时不足，无法标记出勤');
+        if (hasError) flash('error', '部分学员没有购课记录，请先购买课时卡');
         else flash('info', '所有学员已有考勤记录');
         return prev;
       }
 
-      flash('success', `已标记 ${newRecords.length} 名学员出勤`);
+      const msg = overspentCount > 0
+        ? `已标记 ${newRecords.length} 名学员出勤（${overspentCount}人已欠课）`
+        : `已标记 ${newRecords.length} 名学员出勤`;
+      flash('success', msg);
       return { ...prev, courseCards: cards, attendanceRecords: [...prev.attendanceRecords, ...newRecords] };
     });
   }, [flash, updateData]);

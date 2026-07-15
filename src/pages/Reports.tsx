@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { ID, AttendanceRecord, HomeworkRecord } from '../types';
-import { formatDate, isoDateOnly, sortCourseCardsFIFO, toCSV } from '../utils';
+import { formatDate, isoDateOnly, sortCourseCardsFIFO, toCSV, toExcelHTML } from '../utils';
 import Empty from '../components/Empty';
 
 // ============================================================
@@ -339,7 +339,7 @@ function ClassSummaryReport() {
           </label>
         </div>
         <div className="actions-row" style={{ marginTop: 12 }}>
-          <button className="primary" onClick={() => downloadText(`班级汇总-${selectedClass?.name ?? ''}-${dateFrom}-${dateTo}.csv`, toCSV(csvRows), 'text/csv')} disabled={rows.length === 0}>导出 CSV</button>
+          <button className="primary" onClick={() => downloadText(`班级汇总-${selectedClass?.name ?? ''}-${dateFrom}-${dateTo}.xls`, toExcelHTML(csvRows), 'application/vnd.ms-excel')} disabled={rows.length === 0}>导出 Excel</button>
         </div>
       </article>
 
@@ -648,8 +648,8 @@ function StudentDetailReport() {
           {/* CSV Export */}
           <article className="panel">
             <div className="panel-head"><h2>导出</h2></div>
-            <button className="primary" onClick={() => downloadText(`学员明细-${student.name}-${dateFrom}-${dateTo}.csv`, toCSV(csvRows), 'text/csv')}>
-              导出 CSV
+            <button className="primary" onClick={() => downloadText(`学员明细-${student.name}-${dateFrom}-${dateTo}.xls`, toExcelHTML(csvRows), 'application/vnd.ms-excel')}>
+              导出 Excel
             </button>
           </article>
         </>

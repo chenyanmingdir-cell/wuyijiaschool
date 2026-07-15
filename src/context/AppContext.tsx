@@ -439,12 +439,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...s, classIds: s.classIds.filter(id => id !== classId),
       }));
       const orphanIds = updatedStudents.filter(s => s.classIds.length === 0).map(s => s.id);
+
+      // For non-orphan students, find course cards for courses they no longer have any class in
+      const staleCardIds = new Set<string>();
+      for (const s of updatedStudents) {
+        if (s.classIds.length === 0) continue; // orphan, already handled
+        // Remaining course IDs for this student
+        const remainingCourseIds = new Set(
+          s.classIds.map(cid => rest.find(c => c.id === cid)?.courseId).filter(Boolean)
+        );
+        // Mark cards for removal if the course is no longer associated with any of the student's classes
+        for (const cc of prev.courseCards) {
+          if (cc.studentId === s.id && !remainingCourseIds.has(cc.courseId)) {
+            staleCardIds.add(cc.id);
+          }
+        }
+      }
+
       uiDispatch({ type: 'SET_CLASS_ID', id: '' });
       return {
         ...prev,
         classes: rest,
         students: updatedStudents.filter(s => s.classIds.length > 0),
-        courseCards: prev.courseCards.filter(cc => !orphanIds.includes(cc.studentId)),
+        courseCards: prev.courseCards.filter(cc =>
+          !orphanIds.includes(cc.studentId) && !staleCardIds.has(cc.id)
+        ),
         attendanceRecords: prev.attendanceRecords.filter(r => r.classId !== classId && !orphanIds.includes(r.studentId)),
         homeworkRecords: prev.homeworkRecords.filter(r => r.classId !== classId && !orphanIds.includes(r.studentId)),
       };

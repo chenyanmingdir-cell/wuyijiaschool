@@ -55,6 +55,22 @@ export function toCSV(rows: string[][]): string {
   return rows.map((row) => row.map(csvEscape).join(',')).join('\n');
 }
 
+export function toExcelHTML(rows: string[][]): string {
+  const colorMap: Record<string, string> = {
+    '出勤': '#16a34a',
+    '请假': '#dc2626',
+  };
+  const cells = rows.map((row) =>
+    '<tr>' + row.map((cell) => {
+      const color = colorMap[cell];
+      const style = color ? ` style="color:${color};font-weight:600"` : '';
+      return `<td${style}>${cell.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</td>`;
+    }).join('') + '</tr>'
+  ).join('\n');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><table>${cells}</table></body></html>`;
+}
+
 export function createEmptyData(): AppData {
   return {
     version: 1,

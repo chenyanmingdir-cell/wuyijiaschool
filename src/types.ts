@@ -82,6 +82,7 @@ export interface BackupFile {
 
 export interface DashboardDayFlags {
   hasAttendance: boolean;
+  hasLeave: boolean;
   hasHomework: boolean;
   hasClass: boolean;
 }

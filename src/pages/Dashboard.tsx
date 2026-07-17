@@ -29,15 +29,16 @@ export default function Dashboard() {
   useEffect(() => { setActionDate(selectedDate); }, [selectedDate]);
 
   const calendarMarkers = useMemo(() => {
-    const m: Record<string, { hasAttendance: boolean; hasHomework: boolean }> = {};
+    const m: Record<string, { hasAttendance: boolean; hasLeave: boolean; hasHomework: boolean }> = {};
     for (const r of data.attendanceRecords) {
       const d = isoDateOnly(r.date);
-      if (!m[d]) m[d] = { hasAttendance: false, hasHomework: false };
-      m[d].hasAttendance = true;
+      if (!m[d]) m[d] = { hasAttendance: false, hasLeave: false, hasHomework: false };
+      if (r.status === '出勤') m[d].hasAttendance = true;
+      else if (r.status === '请假') m[d].hasLeave = true;
     }
     for (const r of data.homeworkRecords) {
       const d = isoDateOnly(r.date);
-      if (!m[d]) m[d] = { hasAttendance: false, hasHomework: false };
+      if (!m[d]) m[d] = { hasAttendance: false, hasLeave: false, hasHomework: false };
       if (r.status === '已提交') m[d].hasHomework = true;
     }
     return m;

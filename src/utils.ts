@@ -87,7 +87,9 @@ export function createEmptyData(): AppData {
 
 export function classFlagsForDay(data: AppData, date: string): DashboardDayFlags {
   const day = isoDateOnly(date);
-  const hasAttendance = data.attendanceRecords.some((record) => isoDateOnly(record.date) === day);
+  const dayRecords = data.attendanceRecords.filter((record) => isoDateOnly(record.date) === day);
+  const hasAttendance = dayRecords.some((r) => r.status === '出勤');
+  const hasLeave = dayRecords.some((r) => r.status === '请假');
   const hasHomework = data.homeworkRecords.some(
     (record) => isoDateOnly(record.date) === day && record.status === '已提交'
   );
@@ -99,22 +101,25 @@ export function classFlagsForDay(data: AppData, date: string): DashboardDayFlags
     )
   );
 
-  return { hasAttendance, hasHomework, hasClass };
+  return { hasAttendance, hasLeave, hasHomework, hasClass };
 }
 
 export function classFlagsForClassDay(data: AppData, classId: ID, date: string): DashboardDayFlags {
   const day = isoDateOnly(date);
-  const hasAttendance = data.attendanceRecords.some(
+  const dayRecords = data.attendanceRecords.filter(
     (record) => record.classId === classId && isoDateOnly(record.date) === day
   );
+  const hasAttendance = dayRecords.some((r) => r.status === '出勤');
+  const hasLeave = dayRecords.some((r) => r.status === '请假');
   const hasHomework = data.homeworkRecords.some(
     (record) => record.classId === classId && isoDateOnly(record.date) === day && record.status === '已提交'
   );
 
   return {
     hasAttendance,
+    hasLeave,
     hasHomework,
-    hasClass: hasAttendance || hasHomework
+    hasClass: hasAttendance || hasLeave || hasHomework
   };
 }
 

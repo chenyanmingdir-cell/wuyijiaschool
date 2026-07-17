@@ -5,7 +5,7 @@ import type { ID } from '../types';
 interface CalendarProps {
   selectedDate: string;
   onSelectDate: (date: string) => void;
-  markers: Record<string, { hasAttendance: boolean; hasHomework: boolean }>;
+  markers: Record<string, { hasAttendance: boolean; hasLeave: boolean; hasHomework: boolean }>;
 }
 
 function buildMonthDays(monthStart: Date): Date[] {
@@ -39,7 +39,7 @@ export default function Calendar({ selectedDate, onSelectDate, markers }: Calend
           const dayStr = isoDateOnly(day);
           const isToday = dayStr === isoDateOnly(new Date());
           const isSelected = dayStr === selectedDate;
-          const flags = markers[dayStr] ?? { hasAttendance: false, hasHomework: false };
+          const flags = markers[dayStr] ?? { hasAttendance: false, hasLeave: false, hasHomework: false };
           return (
             <button
               key={day.toISOString()}
@@ -49,6 +49,7 @@ export default function Calendar({ selectedDate, onSelectDate, markers }: Calend
               <span>{day.getDate()}</span>
               <div className="dots">
                 {flags.hasAttendance ? <i className="dot purple" /> : null}
+                {flags.hasLeave ? <i className="dot red" /> : null}
                 {flags.hasHomework ? <i className="dot blue" /> : null}
               </div>
             </button>

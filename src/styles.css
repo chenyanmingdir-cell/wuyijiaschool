@@ -7,16 +7,17 @@
 :root {
   color-scheme: light;
 
-  /* ── 中性色板（带轻微紫调，避免死灰） ── */
-  --bg: #f7f7f8;
+  /* ── 中性色板（iOS 系统色：浅灰底 + 白卡 + 灰填充控件） ── */
+  --bg: #f2f2f7;
   --surface: #ffffff;
-  --surface-2: #f3f4f6;
-  --surface-3: #ecedf0;
-  --border: #e5e5ea;
-  --border-strong: #d3d3da;
-  --text: #1b1b1f;
-  --muted: #6f6f78;
-  --faint: #9d9da6;
+  --surface-2: rgba(120, 120, 128, 0.12);
+  --surface-3: rgba(120, 120, 128, 0.2);
+  --border: transparent;                       /* 默认不再描边 */
+  --border-strong: rgba(60, 60, 67, 0.18);
+  --separator: rgba(60, 60, 67, 0.12);         /* 列表内的发丝分隔线 */
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --faint: #a2a2a8;
 
   /* ── 语义色（重点色不变） ── */
   --primary: #7b6cf6;
@@ -163,7 +164,6 @@ button:disabled {
   background: rgba(255, 255, 255, 0.92);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
 }
 
@@ -244,7 +244,7 @@ button:disabled {
 /* ===== Panel ===== */
 .panel {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-xl);
   padding: 20px;
 }
@@ -282,7 +282,7 @@ button:disabled {
 .sub-card,
 .stat {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-md);
   box-shadow: none;
 }
@@ -296,15 +296,14 @@ button:disabled {
   text-align: left;
   width: 100%;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: background 0.2s;
 }
 
 .mini-card:hover {
-  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
 .mini-card.active {
-  border-color: var(--primary);
   background: var(--primary-tint);
 }
 
@@ -371,10 +370,10 @@ button:disabled {
 input,
 select,
 textarea {
-  border: 1px solid var(--border);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text);
   outline: none;
   font-size: 15px;
@@ -382,11 +381,11 @@ textarea {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239d9da6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a2a2a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 34px;
@@ -395,7 +394,6 @@ select {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-tint);
 }
 
@@ -421,7 +419,7 @@ textarea {
 .primary {
   color: #fff;
   background: var(--primary);
-  border: 1px solid transparent;
+  border: none;
 }
 
 .primary:hover {
@@ -434,9 +432,9 @@ textarea {
 
 .ghost,
 .seg {
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .ghost:hover,
@@ -455,7 +453,6 @@ textarea {
 
 .ghost.danger:hover {
   background: var(--danger-tint);
-  border-color: rgba(220, 38, 38, 0.25);
 }
 
 .primary:disabled,
@@ -478,7 +475,6 @@ textarea {
   display: inline-flex;
   gap: 2px;
   background: var(--surface-2);
-  border: 1px solid var(--border);
   padding: 3px;
   border-radius: var(--radius-sm);
 }
@@ -501,7 +497,6 @@ textarea {
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  border-color: var(--border);
   box-shadow: var(--shadow-xs);
 }
 
@@ -623,7 +618,7 @@ textarea {
 .report-table td {
   padding: 9px 10px;
   text-align: left;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--separator);
 }
 
 .report-table th {
@@ -642,23 +637,25 @@ textarea {
   border-radius: var(--radius-md);
   padding: 12px 14px;
   margin: 0 0 12px;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  background: var(--surface);
+  border: none;
+  background: var(--surface-2);
   font-size: 14px;
   color: var(--text);
 }
 
 .flash.success {
-  border-left-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary-strong);
 }
 
 .flash.error {
-  border-left-color: var(--danger);
+  background: var(--danger-tint);
+  color: var(--danger);
 }
 
 .flash.info {
-  border-left-color: #4f7df0;
+  background: rgba(79, 125, 240, 0.12);
+  color: #3b5fc4;
 }
 
 /* ===== Stats ===== */
@@ -693,7 +690,7 @@ textarea {
 .empty {
   padding: 24px 20px;
   border-radius: var(--radius-md);
-  border: 1px dashed var(--border-strong);
+  border: none;
   color: var(--muted);
   background: transparent;
   text-align: center;
@@ -726,8 +723,6 @@ textarea {
   background: var(--surface);
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -8px 32px rgba(16, 16, 20, 0.14);
-  border: 1px solid var(--border);
-  border-bottom: none;
   padding: 8px 20px 20px;
   padding-bottom: calc(20px + var(--safe-bottom));
   max-height: 90vh;
@@ -802,7 +797,6 @@ textarea {
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--surface-2);
-  border: 1px solid var(--border);
   color: var(--text);
   font-size: 12px;
 }
@@ -840,7 +834,7 @@ textarea {
   border-radius: 0;
   box-shadow: none;
   padding: 14px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--separator);
 }
 
 .student-row:last-child {

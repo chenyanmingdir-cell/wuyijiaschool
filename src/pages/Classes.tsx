@@ -287,7 +287,7 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
                 <span style={{ fontSize: 13, color: 'var(--muted)' }}>绑定课程（不可更改）</span>
                 <div style={{
                   padding: '10px 12px', borderRadius: 10, fontSize: 15,
-                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  background: 'var(--surface-2)',
                   color: 'var(--muted)', minHeight: 42, display: 'flex', alignItems: 'center',
                 }}>
                   {course?.name ?? '未绑定课程'}
@@ -785,7 +785,7 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
               <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无考勤记录</p>
             )}
 
-            {dayRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)' }} /> : null}
+            {dayRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid var(--separator)' }} /> : null}
 
             <div className="panel-head" style={{ marginBottom: 8 }}>
               <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增考勤</h3>
@@ -802,7 +802,7 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
               <p className="muted" style={{ marginBottom: 12, fontSize: 13 }}>当日无作业记录</p>
             )}
 
-            {dayHwRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)' }} /> : null}
+            {dayHwRecords.length > 0 ? <hr style={{ margin: '8px 0 16px', border: 'none', borderTop: '1px solid var(--separator)' }} /> : null}
 
             <div className="panel-head" style={{ marginBottom: 8 }}>
               <h3 style={{ fontSize: 14, fontFamily: 'var(--font-body)', fontWeight: 600 }}>新增作业</h3>

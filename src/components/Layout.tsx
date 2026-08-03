@@ -77,7 +77,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               padding: '16px calc(16px + var(--safe-right)) 12px calc(16px + var(--safe-left))',
               position: 'sticky', top: 0, zIndex: 2,
               background: 'var(--bg)',
-              borderBottom: '1px solid rgba(0,0,0,0.05)',
+              borderBottom: '1px solid var(--separator)',
             }}>
               <button className="ghost" onClick={closeStudentCalendar} style={{ padding: '8px 14px', fontSize: 15 }}>← 关闭</button>
               <strong style={{ fontSize: 17 }}>学员日历</strong>

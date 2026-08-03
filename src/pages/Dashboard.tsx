@@ -269,7 +269,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
       {/* Right: toggle buttons + calendar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {mode === 'attendance' ? (
-          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 2 }}>
+          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', borderRadius: 10, padding: 2 }}>
             {attOptions.map((opt) => (
               <button
                 key={opt}
@@ -292,7 +292,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 2 }}>
+          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', borderRadius: 10, padding: 2 }}>
             {hwOptions.map((opt) => (
               <button
                 key={opt}

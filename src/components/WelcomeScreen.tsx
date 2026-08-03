@@ -93,7 +93,7 @@ export default function WelcomeScreen() {
       ) : (
         <div style={{ width: '100%', maxWidth: 320, marginTop: 20 }}>
           <div style={{
-            borderTop: '1px solid rgba(0,0,0,0.06)',
+            borderTop: '1px solid var(--separator)',
             paddingTop: 20, marginBottom: 12,
           }}>
             <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 12px', textAlign: 'center' }}>

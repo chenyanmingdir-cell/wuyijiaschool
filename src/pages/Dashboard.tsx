@@ -4,6 +4,7 @@ import type { AttendanceStatus, HomeworkStatus, ID, SchoolClass, Student } from 
 import { formatDate, isoDateOnly, uid } from '../utils';
 import Calendar from '../components/Calendar';
 import Empty from '../components/Empty';
+import { IconCalendar } from '../components/Icons';
 
 function classFlagsForClassDay(data: { attendanceRecords: { classId: ID; date: string }[]; homeworkRecords: { classId: ID; date: string; status: string }[] }, classId: string, date: string) {
   const day = isoDateOnly(date);
@@ -268,7 +269,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
       {/* Right: toggle buttons + calendar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         {mode === 'attendance' ? (
-          <div style={{ display: 'flex', gap: 0, background: 'var(--bg)', boxShadow: 'var(--neu-sm-inset)', borderRadius: 10, padding: 2 }}>
+          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 2 }}>
             {attOptions.map((opt) => (
               <button
                 key={opt}
@@ -291,7 +292,7 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: 0, background: 'var(--bg)', boxShadow: 'var(--neu-sm-inset)', borderRadius: 10, padding: 2 }}>
+          <div style={{ display: 'flex', gap: 2, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, padding: 2 }}>
             {hwOptions.map((opt) => (
               <button
                 key={opt}
@@ -315,12 +316,11 @@ function DailyStudentRow({ student, schoolClass, date, mode }: DailyStudentRowPr
           </div>
         )}
         <button
-          className="ghost"
+          className="ghost icon-btn"
           onClick={() => openStudentCalendar(student.id)}
-          style={{ padding: '5px 8px', fontSize: 14, minHeight: 'auto', lineHeight: 1 }}
           title="个人日历"
         >
-          📅
+          <IconCalendar size={18} />
         </button>
       </div>
     </div>

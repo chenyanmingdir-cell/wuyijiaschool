@@ -2,13 +2,21 @@ import type { ReactNode } from 'react';
 import { useAppContext, type TabKey } from '../context/AppContext';
 import { StudentCalendarScreen } from '../pages/Classes';
 import InstallPrompt from './InstallPrompt';
+import { IconDashboard, IconClasses, IconReports, IconSettings } from './Icons';
 
 const tabs: Array<{ key: TabKey; label: string; icon: string }> = [
-  { key: 'dashboard', label: '工作台', icon: '☰' },
-  { key: 'classes', label: '班级', icon: '◫' },
-  { key: 'reports', label: '报表', icon: '▦' },
-  { key: 'settings', label: '设置', icon: '⌂' },
+  { key: 'dashboard', label: '工作台', icon: 'dashboard' },
+  { key: 'classes', label: '班级', icon: 'classes' },
+  { key: 'reports', label: '报表', icon: 'reports' },
+  { key: 'settings', label: '设置', icon: 'settings' },
 ];
+
+const tabIcons: Record<string, (size?: number) => ReactNode> = {
+  dashboard: (size) => <IconDashboard size={size} />,
+  classes: (size) => <IconClasses size={size} />,
+  reports: (size) => <IconReports size={size} />,
+  settings: (size) => <IconSettings size={size} />,
+};
 
 function pageTitle(tab: TabKey) {
   if (tab === 'dashboard') return '舞艺嘉学校';
@@ -27,7 +35,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="topbar-copy" style={{ textAlign: 'center' }}>
+        <div className="topbar-copy" style={{ textAlign: 'left' }}>
           <h1>{pageTitle(state.tab)}</h1>
           <p>{pageSubtitle(state.tab)}</p>
         </div>
@@ -47,7 +55,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             className={item.key === state.tab ? 'tab active' : 'tab'}
             onClick={() => setTab(item.key)}
           >
-            <span>{item.icon}</span>
+            <span>{tabIcons[item.icon]?.(20)}</span>
             {item.label}
           </button>
         ))}
@@ -58,7 +66,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Global Student Calendar Overlay */}
       {state.activeStudentCalendarId ? (
         <div className="sheet-backdrop" onClick={closeStudentCalendar}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()} style={{
+          <div className="sheet sheet-full" onClick={(e) => e.stopPropagation()} style={{
             display: 'flex', flexDirection: 'column',
             height: '100%', maxHeight: '100vh', borderRadius: 0, maxWidth: '100%',
             padding: 0,

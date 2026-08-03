@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { IconPhone } from './Icons';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -38,7 +39,7 @@ export default function InstallPrompt() {
 
   return (
     <div className="install-banner">
-      <span style={{ fontSize: 20 }}>📱</span>
+      <IconPhone size={20} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <strong style={{ fontSize: 14 }}>添加到主屏幕</strong>
         <p style={{ margin: '2px 0 0', fontSize: 12, opacity: 0.85 }}>像 App 一样快速打开</p>

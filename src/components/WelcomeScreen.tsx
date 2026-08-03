@@ -39,10 +39,10 @@ export default function WelcomeScreen() {
       {/* Icon */}
       <div style={{
         width: 56, height: 56, borderRadius: 16,
-        background: 'linear-gradient(135deg, var(--primary), var(--primary-strong))',
+        background: 'var(--primary)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 28, fontSize: 28, color: '#fff',
-        boxShadow: '0 4px 16px rgba(124,111,247,0.25)',
+        boxShadow: 'var(--shadow-md)',
       }}>
         ✦
       </div>

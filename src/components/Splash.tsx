@@ -8,7 +8,7 @@ export default function Splash() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#ececf0',
+      background: 'var(--bg)',
       padding: '40px 24px',
     }}>
       {/* Title */}
@@ -18,7 +18,7 @@ export default function Splash() {
         fontWeight: 600,
         color: 'var(--text)',
         margin: 0,
-        letterSpacing: '0.08em',
+        letterSpacing: '0.02em',
         textAlign: 'center',
         animation: 'splashFadeUp 0.8s ease-out both',
       }}>
@@ -41,7 +41,7 @@ export default function Splash() {
         fontSize: 16,
         color: 'var(--muted)',
         margin: 0,
-        letterSpacing: '0.06em',
+        letterSpacing: '0.04em',
         textAlign: 'center',
         lineHeight: 1.8,
         animation: 'splashFadeUp 0.8s 0.5s ease-out both',

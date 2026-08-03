@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import type { AttendanceStatus, AttendanceRecord, HomeworkRecord, HomeworkStatus, ID, SchoolClass, Student } from '../types';
 import { formatDate, formatMonth, isoDateOnly, sortCourseCardsFIFO, startOfMonth, addMonths, totalRemainingForCourse, uid, weekdayLabel } from '../utils';
 import Empty from '../components/Empty';
+import { IconClipboard, IconPen } from '../components/Icons';
 
 // ============================================================
 // Stack-based navigation state
@@ -285,9 +286,9 @@ function ClassDetailScreen({ classId, push }: { classId: ID; push(s: Screen): vo
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <span style={{ fontSize: 13, color: 'var(--muted)' }}>绑定课程（不可更改）</span>
                 <div style={{
-                  padding: '12px 14px', borderRadius: 14, fontSize: 15,
-                  background: 'var(--bg)', boxShadow: 'var(--neu-inset)',
-                  color: 'var(--muted)',
+                  padding: '10px 12px', borderRadius: 10, fontSize: 15,
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  color: 'var(--muted)', minHeight: 42, display: 'flex', alignItems: 'center',
                 }}>
                   {course?.name ?? '未绑定课程'}
                 </div>
@@ -756,13 +757,19 @@ export function StudentCalendarScreen({ studentId }: { studentId: ID }) {
               className={activeTab === 'attendance' ? 'seg active' : 'seg'}
               onClick={() => setActiveTab('attendance')}
             >
-              📋 考勤
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <IconClipboard size={16} />
+                考勤
+              </span>
             </button>
             <button
               className={activeTab === 'homework' ? 'seg active' : 'seg'}
               onClick={() => setActiveTab('homework')}
             >
-              📝 作业
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <IconPen size={16} />
+                作业
+              </span>
             </button>
           </div>
           <span style={{ fontSize: 12, color: 'var(--muted)' }}>{formatDate(selectedDate)}</span>
@@ -830,7 +837,7 @@ function StudentCalendarAttendanceEdit({ record, studentId, date }: { record: At
     setNote(record.note);
   }, [record.id]);
 
-  const statusColor = record.status === '出勤' ? '#7c3aed' : '#dc2626';
+  const statusColor = record.status === '出勤' ? 'var(--primary)' : 'var(--danger)';
 
   if (!editing) {
     return (

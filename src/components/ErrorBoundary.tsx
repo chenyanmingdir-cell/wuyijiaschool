@@ -22,7 +22,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <p style={{ color: '#666', marginBottom: 16, fontSize: 14 }}>{this.state.error.message}</p>
           <button
             onClick={() => { this.setState({ error: null }); window.location.reload(); }}
-            style={{ borderRadius: 20, padding: '10px 24px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: 15 }}
+            style={{ borderRadius: 10, padding: '10px 24px', border: 'none', background: 'var(--primary)', color: '#fff', fontSize: 15 }}
           >
             重新加载
           </button>

@@ -587,7 +587,7 @@ function StudentDetailReport() {
                     {attendanceData.map((r) => {
                       const cls = data.classes.find((c) => c.id === r.classId);
                       const course = data.courses.find((c) => c.id === r.courseId);
-                      const statusColor = r.status === '出勤' ? '#7c3aed' : '#dc2626';
+                      const statusColor = r.status === '出勤' ? 'var(--primary)' : 'var(--danger)';
                       return (
                         <tr key={r.id}>
                           <td>{formatDate(r.date)}</td>
@@ -634,7 +634,7 @@ function StudentDetailReport() {
                           <td>{formatDate(r.date)}</td>
                           <td>{cls?.name ?? ''}</td>
                           <td>{course?.name ?? ''}</td>
-                          <td style={{ color: r.status === '已提交' ? '#7c3aed' : '#dc2626', fontWeight: 500 }}>{r.status}</td>
+                          <td style={{ color: r.status === '已提交' ? 'var(--primary)' : 'var(--danger)', fontWeight: 500 }}>{r.status}</td>
                           <td style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.content || '-'}</td>
                         </tr>
                       );

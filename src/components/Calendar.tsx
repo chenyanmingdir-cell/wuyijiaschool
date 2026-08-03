@@ -26,17 +26,18 @@ export default function Calendar({ selectedDate, onSelectDate, markers }: Calend
 
   return (
     <div>
-      {/* Small title */}
-      <p style={{
+      {/* Title — same style as 当日班级 panel heading */}
+      <h2 style={{
         textAlign: 'center',
-        fontSize: 13,
+        fontFamily: 'var(--font-display)',
+        fontSize: 17,
         fontWeight: 600,
-        color: 'var(--muted)',
+        color: 'var(--text)',
         margin: '0 0 14px',
-        letterSpacing: '0.04em',
+        letterSpacing: '-0.01em',
       }}>
         舞艺嘉学校教学日历
-      </p>
+      </h2>
 
       <div className="panel-head" style={{ justifyContent: 'center', gap: 16 }}>
         <button

@@ -11,23 +11,6 @@ export default function Splash() {
       background: '#ececf0',
       padding: '40px 24px',
     }}>
-      {/* Pixel-art dancing girl */}
-      <div style={{
-        width: 48,
-        height: 70,
-        marginBottom: 32,
-        animation: 'dancerBounce 0.7s ease-in-out infinite',
-        imageRendering: 'pixelated',
-      }}>
-        <img
-          src="/wuyijiaschool/dancegirl.png"
-          alt="dancing girl"
-          width={48}
-          height={70}
-          style={{ display: 'block', imageRendering: 'pixelated' }}
-        />
-      </div>
-
       {/* Title */}
       <h1 style={{
         fontFamily: 'var(--font-display)',
@@ -100,10 +83,6 @@ export default function Splash() {
         @keyframes splashDot {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.8; transform: scale(1.5); }
-        }
-        @keyframes dancerBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
         }
       `}</style>
     </div>

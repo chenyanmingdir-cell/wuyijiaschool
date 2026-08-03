@@ -83,19 +83,6 @@ body {
   overscroll-behavior: none;
 }
 
-/* 氛围光背景：给磨砂玻璃提供可模糊的色彩层次（iOS Liquid Glass 的关键） */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(640px 460px at 12% -6%, rgba(123, 108, 246, 0.16), transparent 62%),
-    radial-gradient(560px 420px at 108% 12%, rgba(79, 125, 240, 0.12), transparent 62%),
-    radial-gradient(620px 480px at 45% 118%, rgba(226, 120, 248, 0.10), transparent 62%);
-}
-
 button,
 input,
 select,
@@ -205,7 +192,6 @@ button:disabled {
 }
 
 .tab.active {
-  background: var(--primary-tint);
   color: var(--primary);
 }
 
@@ -258,11 +244,7 @@ button:disabled {
 
 /* ===== Panel ===== */
 .panel {
-  background: rgba(255, 255, 255, 0.66);
-  -webkit-backdrop-filter: blur(24px) saturate(1.7);
-  backdrop-filter: blur(24px) saturate(1.7);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  background: var(--surface);
   border-radius: var(--radius-xl);
   padding: 20px;
 }
@@ -326,7 +308,7 @@ button:disabled {
 }
 
 .mini-card.active {
-  background: var(--primary-tint);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
 .mini-card-title {
@@ -580,7 +562,7 @@ textarea {
 }
 
 .day.selected {
-  background: var(--primary-tint);
+  background: transparent;
 }
 
 .day.today {
@@ -588,7 +570,6 @@ textarea {
 }
 
 .day.selected.today {
-  background: var(--primary-tint);
   box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
@@ -672,17 +653,14 @@ textarea {
 }
 
 .flash.success {
-  background: var(--primary-tint);
   color: var(--primary-strong);
 }
 
 .flash.error {
-  background: var(--danger-tint);
   color: var(--danger);
 }
 
 .flash.info {
-  background: rgba(79, 125, 240, 0.12);
   color: #3b5fc4;
 }
 

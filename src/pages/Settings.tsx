@@ -69,7 +69,7 @@ export default function Settings() {
             <div
               key={ws.id}
               className={`mini-card${ws.id === workspaceId ? ' active' : ''}`}
-              style={ws.id === workspaceId ? { borderColor: 'var(--primary)', background: 'var(--primary-tint)' } : {}}
+              style={ws.id === workspaceId ? { borderColor: 'var(--primary)' } : {}}
             >
               <div className="mini-card-title">
                 <strong>

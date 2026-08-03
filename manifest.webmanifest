@@ -4,8 +4,8 @@
   "start_url": "/wuyijiaschool/",
   "scope": "/wuyijiaschool/",
   "display": "standalone",
-  "background_color": "#eeeff2",
-  "theme_color": "#eeeff2",
+  "background_color": "#f7f7f8",
+  "theme_color": "#f7f7f8",
   "icons": [
     {
       "src": "/icon-512.png",

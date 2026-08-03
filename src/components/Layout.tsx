@@ -18,29 +18,19 @@ const tabIcons: Record<string, (size?: number) => ReactNode> = {
   settings: (size) => <IconSettings size={size} />,
 };
 
-function pageTitle(tab: TabKey) {
-  if (tab === 'dashboard') return '舞艺嘉学校';
-  if (tab === 'classes') return '班级';
-  if (tab === 'reports') return '报表';
-  return '设置';
-}
-
-function pageSubtitle(_tab: TabKey) {
-  return '';
-}
-
 export default function Layout({ children }: { children: ReactNode }) {
   const { state, setTab, closeStudentCalendar } = useAppContext();
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-copy" style={{ textAlign: 'left' }}>
-          <h1>{pageTitle(state.tab)}</h1>
-          <p>{pageSubtitle(state.tab)}</p>
-        </div>
-        <div className="topbar-spacer" />
-      </header>
+      {state.tab === 'settings' ? (
+        <header className="topbar">
+          <div className="topbar-copy" style={{ textAlign: 'left' }}>
+            <h1>舞艺嘉学校</h1>
+          </div>
+          <div className="topbar-spacer" />
+        </header>
+      ) : null}
 
       {state.flash ? (
         <div className={`flash ${state.flash.kind}`}>{state.flash.text}</div>

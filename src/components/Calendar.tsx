@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatMonth, startOfMonth, addMonths, isoDateOnly, weekdayLabel } from '../utils';
 import type { ID } from '../types';
+import { IconChevronLeft, IconChevronRight } from './Icons';
 
 interface CalendarProps {
   selectedDate: string;
@@ -25,10 +26,54 @@ export default function Calendar({ selectedDate, onSelectDate, markers }: Calend
 
   return (
     <div>
+      {/* Small title */}
+      <p style={{
+        textAlign: 'center',
+        fontSize: 13,
+        fontWeight: 600,
+        color: 'var(--muted)',
+        margin: '0 0 14px',
+        letterSpacing: '0.04em',
+      }}>
+        舞艺嘉学校教学日历
+      </p>
+
       <div className="panel-head" style={{ justifyContent: 'center', gap: 16 }}>
-        <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, -1))} style={{ padding: '8px 12px', fontSize: 16 }}>←</button>
+        <button
+          onClick={() => setMonthCursor(addMonths(monthCursor, -1))}
+          aria-label="上个月"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: '8px 10px',
+            color: 'var(--muted)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          <IconChevronLeft size={18} />
+        </button>
         <strong style={{ fontSize: 15, minWidth: 90, textAlign: 'center' }}>{formatMonth(monthCursor)}</strong>
-        <button className="ghost" onClick={() => setMonthCursor(addMonths(monthCursor, 1))} style={{ padding: '8px 12px', fontSize: 16 }}>→</button>
+        <button
+          onClick={() => setMonthCursor(addMonths(monthCursor, 1))}
+          aria-label="下个月"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: '8px 10px',
+            color: 'var(--muted)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          <IconChevronRight size={18} />
+        </button>
       </div>
 
       <div className="calendar">

@@ -103,3 +103,19 @@ export function IconPhone({ size = 20 }: IconProps) {
     </Icon>
   );
 }
+
+export function IconChevronLeft({ size = 20 }: IconProps) {
+  return (
+    <Icon size={size}>
+      <path d="m15 18-6-6 6-6" />
+    </Icon>
+  );
+}
+
+export function IconChevronRight({ size = 20 }: IconProps) {
+  return (
+    <Icon size={size}>
+      <path d="m9 18 6-6-6-6" />
+    </Icon>
+  );
+}

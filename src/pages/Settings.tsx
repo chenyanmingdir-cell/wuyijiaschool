@@ -15,7 +15,7 @@ function downloadText(filename: string, content: string, type: string) {
 
 export default function Settings() {
   const { state, flash, createCourse, createWorkspace, switchWorkspace, renameWorkspace, deleteWorkspace, exportBackup, importBackup } = useAppContext();
-  const { data, workspaceId, workspaceName, workspaces } = state;
+  const { data, workspaceId, workspaceName, workspaces, offline } = state;
 
   // Course editing
   const [editing, setEditing] = useState(false);
@@ -65,6 +65,33 @@ export default function Settings() {
 
         {/* Current workspace + list */}
         <div className="cards">
+          {workspaces.length === 0 && workspaceId ? (
+            <div
+              className="mini-card active"
+              style={{ borderColor: 'var(--primary)' }}
+            >
+              <div className="mini-card-title">
+                <strong>
+                  {workspaceName || '本地数据'}
+                  <span style={{ fontSize: 11, color: 'var(--primary)', marginLeft: 8 }}>
+                    当前使用{offline ? '（离线）' : ''}
+                  </span>
+                </strong>
+              </div>
+              <div className="row" style={{ marginTop: 4 }}>
+                <span className="muted" style={{ fontSize: 12 }}>
+                  {offline
+                    ? '云端暂不可用，数据仅保存在本机'
+                    : '云端暂时没有此版本，数据仅保存在本机'}
+                </span>
+              </div>
+              <div className="row" style={{ marginTop: 4 }}>
+                <span style={{ fontSize: 12 }}>
+                  班级 {data.classes.length} · 学员 {data.students.length}
+                </span>
+              </div>
+            </div>
+          ) : null}
           {workspaces.map((ws) => (
             <div
               key={ws.id}

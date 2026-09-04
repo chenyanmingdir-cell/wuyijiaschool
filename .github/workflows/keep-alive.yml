@@ -2,8 +2,8 @@ name: Supabase 保活（防止免费项目休眠）
 
 on:
   schedule:
-    # 每周一、周四 UTC 00:27（北京 08:27）
-    - cron: '27 0 * * 1,4'
+    # 每天 UTC 00:27（北京 08:27）
+    - cron: '27 0 * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -13,7 +13,11 @@ jobs:
       - name: Ping Supabase REST API
         run: |
           KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxZHJkcGlkeXh4YndwaHN0ZHB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDY2MTQsImV4cCI6MjA5NjIyMjYxNH0.Z5AfS0ZOIJ4b_WNG81YYvl5jegP2Y4kEuOo2XUqn8Wc"
-          curl -sf "https://pqdrdpidyxxbwphstdpz.supabase.co/rest/v1/workspaces?select=id&limit=1" \
+          if curl -sf -o /dev/null "https://pqdrdpidyxxbwphstdpz.supabase.co/rest/v1/workspaces?select=id&limit=1" \
             -H "apikey: $KEY" \
-            -H "Authorization: Bearer $KEY" \
-            && echo "Supabase OK" || echo "Ping failed (project might be paused)"
+            -H "Authorization: Bearer $KEY"; then
+            echo "Supabase OK"
+          else
+            echo "::error::Supabase ping failed (project paused, deleted or unreachable)"
+            exit 1
+          fi

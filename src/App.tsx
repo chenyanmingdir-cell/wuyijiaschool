@@ -23,8 +23,8 @@ function AppContent() {
     return <Splash />;
   }
 
-  // New device: no workspaces yet — show onboarding
-  if (state.workspaces.length === 0) {
+  // No current workspace and nothing to enter — show onboarding
+  if (!state.workspaceId && state.workspaces.length === 0) {
     return <WelcomeScreen />;
   }
 

@@ -87,6 +87,13 @@ function resolveFIFOCard(cards: CourseCard[], studentId: ID, courseId: ID, prefe
 }
 
 const WS_KEY = 'wuyijiaschool:workspaceId';
+const WS_NAME_KEY = 'wuyijiaschool:workspaceName';
+const LOCAL_WS_ID = 'local-offline';
+
+function persistWorkspaceMeta(id: string, name: string) {
+  localStorage.setItem(WS_KEY, id);
+  localStorage.setItem(WS_NAME_KEY, name);
+}
 
 // ============================================================
 // AppState (combined)
@@ -97,6 +104,7 @@ interface AppState extends UIState {
   workspaceId: ID;
   workspaceName: string;
   workspaces: Workspace[];
+  offline: boolean;
 }
 
 // ============================================================
@@ -161,12 +169,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [workspaceId, setWorkspaceId] = useState<ID>('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [offline, setOfflineState] = useState(false);
+  const offlineRef = useRef(false);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  function setOfflineMode(v: boolean) {
+    offlineRef.current = v;
+    setOfflineState(v);
+  }
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveVersion = useRef(0);
   const initDone = useRef(false);
 
-  const state: AppState = { ...ui, data, workspaceId, workspaceName, workspaces };
+  const state: AppState = { ...ui, offline, data, workspaceId, workspaceName, workspaces };
 
   // ---- Flash ----
   const flash = useCallback((kind: FlashKind, text: string) => {
@@ -188,19 +205,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const list = await db.listWorkspaces();
         const savedId = localStorage.getItem(WS_KEY);
+        const savedName = localStorage.getItem(WS_NAME_KEY) || '';
 
         let targetWs: Workspace | undefined;
-        if (savedId) targetWs = list.find(w => w.id === savedId);
+        if (savedId && savedId !== LOCAL_WS_ID) targetWs = list.find(w => w.id === savedId);
         if (!targetWs) targetWs = list[0];
 
         if (targetWs && targetWs.data && targetWs.data.version === 1 && Array.isArray(targetWs.data.classes)) {
-          setWorkspaces(list);
-          setWorkspaceId(targetWs.id);
-          setWorkspaceName(targetWs.name);
-          setData(targetWs.data);
-          if (savedId !== targetWs.id) localStorage.setItem(WS_KEY, targetWs.id);
-          // Save local backup
-          storage.saveAppState(targetWs.data).catch(() => {});
+          // If this device was used offline after the last cloud sync, prefer the newer local copy
+          const localData = await storage.loadAppState<AppData>().catch(() => null);
+          const localNewer = !!(
+            localData && localData.version === 1 && Array.isArray(localData.classes)
+            && localData.updatedAt && targetWs.data.updatedAt
+            && localData.updatedAt > targetWs.data.updatedAt
+          );
+
+          if (localNewer) {
+            console.warn('[AppContext] 本地数据比云端新，使用本地数据并同步到云端');
+            setWorkspaces(list);
+            setWorkspaceId(targetWs.id);
+            setWorkspaceName(targetWs.name);
+            setData(localData);
+            persistWorkspaceMeta(targetWs.id, targetWs.name);
+            try {
+              await db.saveWorkspace(targetWs.id, targetWs.name, localData);
+            } catch { /* will retry on next refresh */ }
+          } else {
+            setWorkspaces(list);
+            setWorkspaceId(targetWs.id);
+            setWorkspaceName(targetWs.name);
+            setData(targetWs.data);
+            persistWorkspaceMeta(targetWs.id, targetWs.name);
+            // Save local backup
+            storage.saveAppState(targetWs.data).catch(() => {});
+          }
         } else if (targetWs) {
           // Workspace exists but data is corrupted — skip it and fall back to empty
           console.warn('[AppContext] 当前工作区数据异常，已回退到空数据');
@@ -209,15 +247,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setWorkspaceName('');
           setData(createEmptyData());
           localStorage.removeItem(WS_KEY);
+          localStorage.removeItem(WS_NAME_KEY);
         } else {
           // No Supabase workspaces: try local backup
           const localData = await storage.loadAppState<AppData>().catch(() => null);
-          if (localData && localData.version === 1 && Array.isArray(localData.classes)) {
-            console.warn('[AppContext] Supabase 无数据，已从本地备份恢复');
+          if (localData && localData.version === 1 && Array.isArray(localData.classes) && savedId) {
+            // The cloud workspace is gone but this device still has a usable copy
+            console.warn('[AppContext] 云端无此工作区，已从本地备份恢复（本地模式）');
             setWorkspaces([]);
-            setWorkspaceId('');
-            setWorkspaceName('');
+            setWorkspaceId(LOCAL_WS_ID);
+            setWorkspaceName(savedName || '本地数据');
             setData(localData);
+            setOfflineMode(true);
           } else {
             // No workspaces at all: let user create one via onboarding
             setWorkspaces([]);
@@ -227,16 +268,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch {
-        // Supabase offline: try local backup
+        // Supabase offline/unreachable: try local backup and enter the app
         const localData = await storage.loadAppState<AppData>().catch(() => null);
         if (localData && localData.version === 1 && Array.isArray(localData.classes)) {
-          console.warn('[AppContext] Supabase 不可用，已从本地备份恢复');
+          const savedId = localStorage.getItem(WS_KEY);
+          const savedName = localStorage.getItem(WS_NAME_KEY) || '';
+          console.warn('[AppContext] Supabase 不可用，已进入离线模式并使用本地备份');
+          setWorkspaces([]);
+          setWorkspaceId(savedId && savedId !== LOCAL_WS_ID ? savedId : LOCAL_WS_ID);
+          setWorkspaceName(savedName || '本地数据（离线）');
+          setData(localData);
+          setOfflineMode(true);
+        } else {
+          // No local backup at all: keep empty onboarding state
           setWorkspaces([]);
           setWorkspaceId('');
           setWorkspaceName('');
-          setData(localData);
+          setData(createEmptyData());
+          setOfflineMode(true);
         }
-        // else keep empty data
       } finally {
         uiDispatch({ type: 'INIT_DONE' });
       }
@@ -256,6 +306,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const current = list.find(w => w.id === workspaceId);
         if (current && current.name !== workspaceName) {
           setWorkspaceName(current.name);
+          localStorage.setItem(WS_NAME_KEY, current.name);
+        }
+        // Cloud reachable again: leave offline mode and push any offline edits
+        if (offlineRef.current) {
+          setOfflineMode(false);
+          if (workspaceId !== LOCAL_WS_ID) {
+            const latest = dataRef.current;
+            const cloudWs = list.find(w => w.id === workspaceId);
+            const cloudData = cloudWs?.data;
+            const localNewer = cloudData && latest.updatedAt && cloudData.updatedAt
+              ? latest.updatedAt > cloudData.updatedAt
+              : true;
+            if (localNewer) {
+              try {
+                await db.saveWorkspace(workspaceId, workspaceName, latest);
+                console.log('[AppContext] 云端已恢复，离线数据已同步');
+              } catch { /* still offline, will retry later */ }
+            }
+          }
         }
       } catch { /* ignore */ }
     };
@@ -301,7 +370,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setWorkspaceId(ws.id);
       setWorkspaceName(ws.name);
       setData(ws.data);
-      localStorage.setItem(WS_KEY, ws.id);
+      persistWorkspaceMeta(ws.id, ws.name);
+      setOfflineMode(false);
       flash('success', `已创建「${trimmed}」`);
     } catch {
       flash('error', '创建失败，请重试');
@@ -318,7 +388,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setWorkspaceId(id);
     setWorkspaceName(target.name);
     setData(target.data);
-    localStorage.setItem(WS_KEY, id);
+    persistWorkspaceMeta(id, target.name);
+    setOfflineMode(false);
     flash('info', `已切换到「${target.name}」`);
   }, [workspaceId, workspaceName, data, workspaces, flash]);
 
@@ -333,8 +404,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setWorkspaceId(next.id);
         setWorkspaceName(next.name);
         setData(next.data);
-        localStorage.setItem(WS_KEY, next.id);
+        persistWorkspaceMeta(next.id, next.name);
       }
+      setOfflineMode(false);
       flash('success', '已删除工作区');
     } catch {
       flash('error', '删除失败，请重试');
@@ -345,10 +417,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const trimmed = name.trim();
     if (!trimmed) { flash('error', '名称不能为空'); return; }
     try {
-      if (id === workspaceId) {
-        await db.saveWorkspace(id, trimmed, data);
-        setWorkspaceName(trimmed);
-      } else {
+        if (id === workspaceId) {
+          await db.saveWorkspace(id, trimmed, data);
+          setWorkspaceName(trimmed);
+          localStorage.setItem(WS_NAME_KEY, trimmed);
+          setOfflineMode(false);
+        } else {
         const ws = workspaces.find(w => w.id === id);
         if (!ws) return;
         await db.saveWorkspace(id, trimmed, ws.data);

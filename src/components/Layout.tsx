@@ -23,6 +23,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-shell">
+      {state.offline ? (
+        <div className="offline-bar">当前离线模式：云端暂不可用，数据保存在本机，联网后会自动同步。</div>
+      ) : null}
+
       {state.tab === 'settings' ? (
         <header className="topbar">
           <div className="topbar-copy" style={{ textAlign: 'left' }}>

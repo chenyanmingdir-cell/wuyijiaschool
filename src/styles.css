@@ -642,6 +642,16 @@ textarea {
 }
 
 /* ===== Flash ===== */
+.offline-bar {
+  margin: 0 0 12px;
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  background: var(--primary-tint);
+  color: var(--primary-strong);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .flash {
   border-radius: var(--radius-md);
   padding: 12px 14px;
